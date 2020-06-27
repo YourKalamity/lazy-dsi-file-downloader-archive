@@ -1,3 +1,4 @@
+
 import tkinter 
 from tkinter import messagebox
 from tkinter import filedialog
@@ -8,6 +9,8 @@ import requests
 import json
 import py7zr
 from pathlib import Path
+import shutil
+import zipfile
 
 dsiVersions = ["1.0 - 1.3 (USA, EUR, AUS, JPN)", "1.4 - 1.4.5 (USA, EUR, AUS, JPN)", "All versions (KOR, CHN)"]
 memoryPitLinks = ["https://github.com/YourKalamity/just-a-dsi-cfw-installer/raw/master/assets/files/memoryPit/256/pit.bin","https://github.com/YourKalamity/just-a-dsi-cfw-installer/raw/master/assets/files/memoryPit/768_1024/pit.bin"]
@@ -22,6 +25,11 @@ SDentry.width = 100
 
 def getLatestTWLmenu():
     release = json.loads(requests.get("https://api.github.com/repos/DS-Homebrew/TWiLightMenu/releases/latest").content)
+    url = release["assets"][0]["browser_download_url"]
+    return url
+
+def getLatestdumpTool():
+    release = json.loads(requests.get("https://api.github.com/repos/zoogie/dumpTool/releases/latest").content)
     url = release["assets"][0]["browser_download_url"]
     return url
 
@@ -48,7 +56,7 @@ def validateDirectory(directory):
             return False
         except PermissionError:
             outputbox("You do not have write")
-            outputbox(" access to that folder")
+            outputbox(" access  to that folder")
             return False
         else:
             return True
@@ -77,7 +85,7 @@ def start():
     r = requests.get(memoryPitDownload, allow_redirects=True)
     memoryPitLocation = memoryPitLocation + "pit.bin"
     open(memoryPitLocation, 'wb').write(r.content)
-    outputbox("Memory Pit Downloaded         ")
+    outputbox("Memory Pit Downloaded")
 
     #Download TWiLight Menu
     r = requests.get(getLatestTWLmenu(), allow_redirects=True)
@@ -89,7 +97,37 @@ def start():
     archive = py7zr.SevenZipFile(TWLmenuLocation, mode='r')
     archive.extractall(path=temp)
     archive.close()
+    outputbox("TWiLight Menu ++ Extracted    ")
+
+    #Move TWiLight Menu
+    shutil.copy(temp + "DSi&3DS - SD card users/BOOT.NDS", directory)
+    shutil.move(temp + "_nds/" , directory) 
+    shutil.move(temp + "DSi - CFW users/SDNAND root/hiya", directory)
+    shutil.move(temp + "DSi - CFW users/SDNAND root/title", directory)
+    shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-nightly.nds", directory + "/_nds")
+    shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-release.nds", directory + "/_nds")
+    outputbox("TWiLight Menu placed          ")
+
+    #Download dumpTool
+    r = requests.get(getLatestdumpTool(), allow_redirects=True)
+    dumpToolLocation = directory + "/dumpTool.nds"
+    open(dumpToolLocation,'wb').write(r.content)
+    outputbox("dumpTool Downloaded           ")
+
+    if unlaunchNeeded == 1 :
+        #Download Unlaunch
+        url = "https://problemkaputt.de/unlaunch.zip"
+        r = requests.get(url, allow_redirects=True)
+        unlaunchLocation = temp + "unlaunch.zip"
+        open(dumpToolLocation,'wb').write(r.content)
+        outputbox("Unlaunch Downloaded           ")
+
+        #Extract Unlaunch
+        with zipfile.ZipFile(unlaunchLocation, 'r') as zip_ref:
+            zip_ref.extractall(directory)
+
     
+
 def chooseDir():
     window.sourceFolder =  filedialog.askdirectory(parent=window, initialdir= "/", title='Please select the directory of your SD card')
     SDentry.delete(0, tkinter.END)
@@ -107,7 +145,7 @@ selector = tkinter.OptionMenu(window, firmwareVersion, *dsiVersions)
 selector.width = 100
 
 unlaunch = tkinter.IntVar(value=1)
-unlaunchCheck = tkinter.Checkbutton(window, text = "Install Unlaunch?", variable =unlaunch)
+unlaunchCheck = tkinter.Checkbutton(window, text = "Download Unlaunch?", variable =unlaunch)
 
 startButton = tkinter.Button(window, text = "Start", width = 20, command = start)
 outputLabel = tkinter.Label(text="Output")
