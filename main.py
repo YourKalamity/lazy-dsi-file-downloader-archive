@@ -12,6 +12,10 @@ import shutil
 from subprocess import Popen
 import zipfile
 
+if(sys.version_info.major < 3):
+        print("This program will ONLY work on Python 3 and above")
+        sys.exit()
+
 dsiVersions = ["1.0 - 1.3 (USA, EUR, AUS, JPN)", "1.4 - 1.4.5 (USA, EUR, AUS, JPN)", "All versions (KOR, CHN)"]
 memoryPitLinks = ["https://github.com/YourKalamity/just-a-dsi-cfw-installer/raw/master/assets/files/memoryPit/256/pit.bin","https://github.com/YourKalamity/just-a-dsi-cfw-installer/raw/master/assets/files/memoryPit/768_1024/pit.bin"]
 
