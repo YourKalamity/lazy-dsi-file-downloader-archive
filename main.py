@@ -1,4 +1,8 @@
 
+# Created by YourKalamity
+#https://github.com/YourKalamity/lazy-dsi-file-downloader
+
+
 import tkinter 
 from tkinter import messagebox
 from tkinter import filedialog
@@ -22,11 +26,13 @@ memoryPitLinks = ["https://github.com/YourKalamity/just-a-dsi-cfw-installer/raw/
 window = tkinter.Tk()
 window.sourceFolder = ''
 window.sourceFile = ''
-appTitle = tkinter.Label(text="Lazy DSi file downloader")
+appTitle = tkinter.Label(text="Lazy DSi file downloader",font=('Verdana', 14), fg="white", bg="black")
 appTitle.width = 100
-SDlabel = tkinter.Label(text = "SD card directory")
+appAuthor = tkinter.Label(text="by YourKalamity",font=('Verdana', 10, 'italic'), anchor="w")
+appAuthor.width = 100
+SDlabel = tkinter.Label(text = "Enter your SD card's directory")
 SDlabel.width = 100
-SDentry = tkinter.Entry()
+SDentry = tkinter.Entry(width=30)
 SDentry.width = 100
 
 def getLatestTWLmenu():
@@ -186,11 +192,11 @@ def chooseDir():
     SDentry.insert(0, window.sourceFolder)
 
 
-b_chooseDir = tkinter.Button(window, text = "Choose Folder", width = 20, command = chooseDir)
+b_chooseDir = tkinter.Button(window, text = "Click to select folder", width = 25, command = chooseDir)
 b_chooseDir.width = 100
 b_chooseDir.height = 50
 
-firmwareLabel = tkinter.Label(text = "Select your DSi firmware")
+firmwareLabel = tkinter.Label(text = "Select your DSi firmware : ")
 firmwareLabel.width = 100
 
 firmwareVersion = tkinter.StringVar(window)
@@ -201,7 +207,7 @@ selector.width = 100
 unlaunch = tkinter.IntVar(value=1)
 unlaunchCheck = tkinter.Checkbutton(window, text = "Download Unlaunch?", variable =unlaunch)
 
-startButton = tkinter.Button(window, text = "Start", width = 20, command = start)
+startButton = tkinter.Button(window, text = "Start", width = 25, command = start)
 outputLabel = tkinter.Label(text="Output")
 outputLabel.width = 100
 outputBox = tkinter.Text(window,state='disabled', width = 30, height = 10)
@@ -209,6 +215,7 @@ outputBox = tkinter.Text(window,state='disabled', width = 30, height = 10)
 window.title("Lazy DSi file downloader")
 window.resizable(0, 0)
 appTitle.pack()
+appAuthor.pack()
 SDlabel.pack()
 SDentry.pack()
 b_chooseDir.pack()
