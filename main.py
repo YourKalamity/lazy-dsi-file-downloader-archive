@@ -7,9 +7,9 @@ import platform
 import sys
 import requests
 import json
-import py7zr
 from pathlib import Path
 import shutil
+from subprocess import Popen
 import zipfile
 
 dsiVersions = ["1.0 - 1.3 (USA, EUR, AUS, JPN)", "1.4 - 1.4.5 (USA, EUR, AUS, JPN)", "All versions (KOR, CHN)"]
@@ -18,6 +18,8 @@ memoryPitLinks = ["https://github.com/YourKalamity/just-a-dsi-cfw-installer/raw/
 window = tkinter.Tk()
 window.sourceFolder = ''
 window.sourceFile = ''
+appTitle = tkinter.Label(text="Lazy DSi file downloader")
+appTitle.width = 100
 SDlabel = tkinter.Label(text = "SD card directory")
 SDlabel.width = 100
 SDentry = tkinter.Entry()
@@ -63,6 +65,40 @@ def validateDirectory(directory):
 
 def start():
     outputBox.delete(0, tkinter.END)
+    sysname = platform.system()
+    _7za = os.path.join(sysname, '7za')
+    _7z = None
+    if sysname == "Windows":
+        from winreg import OpenKey, QueryValueEx, HKEY_LOCAL_MACHINE, KEY_READ, KEY_WOW64_64KEY
+        print('Searching for 7-Zip in the Windows registry...')
+
+        try:
+            with OpenKey(HKEY_LOCAL_MACHINE, 'SOFTWARE\\7-Zip', 0, KEY_READ | KEY_WOW64_64KEY) as hkey:
+                _7z = os.path.join(QueryValueEx(hkey, 'Path')[0], '7z.exe')
+
+                if not os.path.exists(_7z):
+                    raise WindowsError
+                
+                _7za = _7z
+        except WindowsError:
+            print('Searching for 7-Zip in the 32-bit Windows registry...')
+
+            try:
+                with OpenKey(HKEY_LOCAL_MACHINE, 'SOFTWARE\\7-Zip') as hkey:
+                    _7z = os.path.join(QueryValueEx(hkey, 'Path')[0], '7z.exe')
+
+                    if not os.path.exists(_7z):
+                        raise WindowsError
+
+                    _7za = _7z
+            except WindowsError:
+                print("7-Zip not found, please install it before using")
+                outputbox("7-Zip not found")
+                return
+    print("7-Zip found!")
+    outputBox.configure(state='normal')
+    outputBox.delete('1.0', tkinter.END)
+    outputBox.configure(state='disabled')
     #Variables
     directory = SDentry.get()
     version = firmwareVersion.get()
@@ -85,19 +121,25 @@ def start():
     r = requests.get(memoryPitDownload, allow_redirects=True)
     memoryPitLocation = memoryPitLocation + "pit.bin"
     open(memoryPitLocation, 'wb').write(r.content)
-    outputbox("Memory Pit Downloaded")
+    outputbox("Memory Pit Downloaded          ")
 
     #Download TWiLight Menu
     r = requests.get(getLatestTWLmenu(), allow_redirects=True)
     TWLmenuLocation = temp + "TWiLightMenu.7z"
     open(TWLmenuLocation,'wb').write(r.content)
-    outputbox("TWiLight Menu ++ Downloaded   ")
+    outputbox("TWiLight Menu ++ Downloaded    ")
 
     #Extract TWiLight Menu
-    archive = py7zr.SevenZipFile(TWLmenuLocation, mode='r')
-    archive.extractall(path=temp)
-    archive.close()
-    outputbox("TWiLight Menu ++ Extracted    ")
+    proc = Popen([ _7za, 'x', TWLmenuLocation, '-o' + temp, '_nds', 'DSi - CFW users',
+                'DSi&3DS - SD card users', 'roms' ])
+    ret_val = proc.wait()
+
+    while True:
+        if ret_val  == 0:
+            outputbox("TWiLight Menu ++ Extracted     ")
+            break
+        else:
+            continue
 
     #Move TWiLight Menu
     shutil.copy(temp + "DSi&3DS - SD card users/BOOT.NDS", directory)
@@ -106,32 +148,40 @@ def start():
     shutil.move(temp + "DSi - CFW users/SDNAND root/title", directory)
     shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-nightly.nds", directory + "/_nds")
     shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-release.nds", directory + "/_nds")
-    outputbox("TWiLight Menu placed          ")
+    outputbox("TWiLight Menu ++ placed        ")
 
     #Download dumpTool
     r = requests.get(getLatestdumpTool(), allow_redirects=True)
     dumpToolLocation = directory + "/dumpTool.nds"
     open(dumpToolLocation,'wb').write(r.content)
-    outputbox("dumpTool Downloaded           ")
+    outputbox("dumpTool Downloaded            ")
 
     if unlaunchNeeded == 1 :
         #Download Unlaunch
         url = "https://problemkaputt.de/unlaunch.zip"
         r = requests.get(url, allow_redirects=True)
         unlaunchLocation = temp + "unlaunch.zip"
-        open(dumpToolLocation,'wb').write(r.content)
-        outputbox("Unlaunch Downloaded           ")
+        open(unlaunchLocation,'wb').write(r.content)
+        outputbox("Unlaunch Downloaded            ")
 
         #Extract Unlaunch
         with zipfile.ZipFile(unlaunchLocation, 'r') as zip_ref:
             zip_ref.extractall(directory)
-
+            zip_ref.close()
+        
     
+        #Delete tmp folder
+        shutil.rmtree(directory + '/tmp')
 
+        outputbox("Done!")
+        
+        
 def chooseDir():
     window.sourceFolder =  filedialog.askdirectory(parent=window, initialdir= "/", title='Please select the directory of your SD card')
     SDentry.delete(0, tkinter.END)
     SDentry.insert(0, window.sourceFolder)
+
+
 b_chooseDir = tkinter.Button(window, text = "Choose Folder", width = 20, command = chooseDir)
 b_chooseDir.width = 100
 b_chooseDir.height = 50
@@ -152,7 +202,9 @@ outputLabel = tkinter.Label(text="Output")
 outputLabel.width = 100
 outputBox = tkinter.Text(window,state='disabled', width = 30, height = 10)
 
-
+window.title("Lazy DSi file downloader")
+window.resizable(0, 0)
+appTitle.pack()
 SDlabel.pack()
 SDentry.pack()
 b_chooseDir.pack()
