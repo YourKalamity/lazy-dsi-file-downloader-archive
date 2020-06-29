@@ -1,5 +1,7 @@
 # Lazy DSi file downloader (for dsi.cfw.guide)
 
+![a screenshot of the program](https://github.com/YourKalamity/lazy-dsi-file-downloader/raw/master/assets/files/screenshots/app.png "Lazy DSi file downloader on Windows 10")
+
 Automatically downloads 
 - Memory Pit
 - TWiLight Menu ++
