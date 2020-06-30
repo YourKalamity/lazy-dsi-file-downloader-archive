@@ -1,6 +1,6 @@
 
 # Created by YourKalamity
-#https://github.com/YourKalamity/lazy-dsi-file-downloader    
+#https://github.com/YourKalamity/lazy-dsi-file-downloader
 
 
 import tkinter 
@@ -15,8 +15,6 @@ from pathlib import Path
 import shutil
 from subprocess import Popen
 import zipfile
-import distutils
-from distutils import dir_util
 
 if(sys.version_info.major < 3):
         print("This program will ONLY work on Python 3 and above")
@@ -127,53 +125,46 @@ def start():
     temp = directory + "/tmp/"
     Path(temp).mkdir(parents=True,exist_ok=True)
 
-    if downloadmemorypit.get() == 1:
-        #Download Memory Pit
-        memoryPitLocation = directory + "/private/ds/app/484E494A/"
-        Path(memoryPitLocation).mkdir(parents=True, exist_ok=True)
-        r = requests.get(memoryPitDownload, allow_redirects=True)
-        memoryPitLocation = memoryPitLocation + "pit.bin"
-        open(memoryPitLocation, 'wb').write(r.content)
-        outputbox("Memory Pit Downloaded          ")
-        print("Memory Pit Downloaded")
+    #Download Memory Pit
+    memoryPitLocation = directory + "/private/ds/app/484E494A/"
+    Path(memoryPitLocation).mkdir(parents=True, exist_ok=True)
+    r = requests.get(memoryPitDownload, allow_redirects=True)
+    memoryPitLocation = memoryPitLocation + "pit.bin"
+    open(memoryPitLocation, 'wb').write(r.content)
+    outputbox("Memory Pit Downloaded          ")
 
-    if downloadtwlmenu.get() == 1:
-        #Download TWiLight Menu
-        r = requests.get(getLatestTWLmenu(), allow_redirects=True)
-        TWLmenuLocation = temp + "TWiLightMenu.7z"
-        open(TWLmenuLocation,'wb').write(r.content)
-        outputbox("TWiLight Menu ++ Downloaded    ")
-        print("TWiLight Menu ++ Downloaded")
+    #Download TWiLight Menu
+    r = requests.get(getLatestTWLmenu(), allow_redirects=True)
+    TWLmenuLocation = temp + "TWiLightMenu.7z"
+    open(TWLmenuLocation,'wb').write(r.content)
+    outputbox("TWiLight Menu ++ Downloaded    ")
 
-        #Extract TWiLight Menu
-        proc = Popen([ _7za, 'x', TWLmenuLocation, '-y' , '-o' + temp, '_nds', 'DSi - CFW users',
+    #Extract TWiLight Menu
+    proc = Popen([ _7za, 'x', TWLmenuLocation, '-o' + temp, '_nds', 'DSi - CFW users',
                 'DSi&3DS - SD card users', 'roms' ])
-        ret_val = proc.wait()
+    ret_val = proc.wait()
 
-        while True:
-            if ret_val  == 0:
-                    outputbox("TWiLight Menu ++ Extracted     ")
-                    print("TWiLight Menu ++ Extracted to", temp)
-                    break
+    while True:
+        if ret_val  == 0:
+            outputbox("TWiLight Menu ++ Extracted     ")
+            break
+        else:
+            continue
 
-        #Move TWiLight Menu
-        shutil.copy(temp + "DSi&3DS - SD card users/BOOT.NDS", directory)
-        distutils.dir_util.copy_tree(temp + "_nds/" , directory +"/_nds/") 
-        distutils.dir_util.copy_tree(temp + "DSi - CFW users/SDNAND root/hiya", directory+"hiya/")
-        distutils.dir_util.copy_tree(temp + "DSi - CFW users/SDNAND root/title", directory+"hiya/")
-        shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-nightly.nds", directory + "/_nds")
-        shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-release.nds", directory + "/_nds")
-        Path(directory + "/roms/").mkdir(parents=True,exist_ok=True)
-        print("TWiLight  Menu ++ placed in", directory)
-        outputbox("TWiLight Menu ++ placed        ")
+    #Move TWiLight Menu
+    shutil.copy(temp + "DSi&3DS - SD card users/BOOT.NDS", directory)
+    shutil.move(temp + "_nds/" , directory) 
+    shutil.move(temp + "DSi - CFW users/SDNAND root/hiya", directory)
+    shutil.move(temp + "DSi - CFW users/SDNAND root/title", directory)
+    shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-nightly.nds", directory + "/_nds")
+    shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-release.nds", directory + "/_nds")
+    outputbox("TWiLight Menu ++ placed        ")
 
-    if downloaddumptool.get() == 1:            
-        #Download dumpTool
-        r = requests.get(getLatestdumpTool(), allow_redirects=True)
-        dumpToolLocation = directory + "/dumpTool.nds"
-        open(dumpToolLocation,'wb').write(r.content)
-        print("dumpTool downloaded")
-        outputbox("dumpTool Downloaded            ")
+    #Download dumpTool
+    r = requests.get(getLatestdumpTool(), allow_redirects=True)
+    dumpToolLocation = directory + "/dumpTool.nds"
+    open(dumpToolLocation,'wb').write(r.content)
+    outputbox("dumpTool Downloaded            ")
 
     if unlaunchNeeded == 1 :
         #Download Unlaunch
@@ -181,7 +172,6 @@ def start():
         r = requests.get(url, allow_redirects=True)
         unlaunchLocation = temp + "unlaunch.zip"
         open(unlaunchLocation,'wb').write(r.content)
-        print("Unlaunch Downloaded")
         outputbox("Unlaunch Downloaded            ")
 
         #Extract Unlaunch
@@ -190,11 +180,11 @@ def start():
             zip_ref.close()
         
     
-    #Delete tmp folder
-    shutil.rmtree(directory + '/tmp')
-    print("Done!")
-    outputbox("Done!")
+        #Delete tmp folder
+        shutil.rmtree(directory + '/tmp')
 
+        outputbox("Done!")
+        
         
 def chooseDir():
     window.sourceFolder =  filedialog.askdirectory(parent=window, initialdir= "/", title='Please select the directory of your SD card')
@@ -206,12 +196,6 @@ b_chooseDir = tkinter.Button(window, text = "Click to select folder", width = 25
 b_chooseDir.width = 100
 b_chooseDir.height = 50
 
-downloadmemorypit = tkinter.IntVar(value=1)
-downloadmemorypitCheck = tkinter.Checkbutton(window, text = "Download Memory pit exploit?", variable = downloadmemorypit)
-
-downloadtwlmenu = tkinter.IntVar(value=1)
-downloadtwlmenuCheck = tkinter.Checkbutton(window, text = "Download / Update TWiLight menu?", variable = downloadtwlmenu)
-
 firmwareLabel = tkinter.Label(text = "Select your DSi firmware : ")
 firmwareLabel.width = 100
 
@@ -220,13 +204,10 @@ firmwareVersion.set(dsiVersions[0])
 selector = tkinter.OptionMenu(window, firmwareVersion, *dsiVersions)
 selector.width = 100
 
-downloaddumptool = tkinter.IntVar(value=1)
-downloaddumptoolCheck = tkinter.Checkbutton(window, text ="Download dumpTool?", variable=downloaddumptool)
-
 unlaunch = tkinter.IntVar(value=1)
 unlaunchCheck = tkinter.Checkbutton(window, text = "Download Unlaunch?", variable =unlaunch)
 
-startButton = tkinter.Button(window, text = "Start", font = ("TkDefaultFont",12,'bold'), width = 25, command = start)
+startButton = tkinter.Button(window, text = "Start", width = 25, command = start)
 outputLabel = tkinter.Label(text="Output")
 outputLabel.width = 100
 outputBox = tkinter.Text(window,state='disabled', width = 30, height = 10)
@@ -238,11 +219,8 @@ appAuthor.pack()
 SDlabel.pack()
 SDentry.pack()
 b_chooseDir.pack()
-downloadmemorypitCheck.pack()
 firmwareLabel.pack()
 selector.pack()
-downloadtwlmenuCheck.pack()
-downloaddumptoolCheck.pack()
 unlaunchCheck.pack()
 startButton.pack()
 outputLabel.pack()
