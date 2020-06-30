@@ -12,6 +12,7 @@ and places them in the correct folders on the SD card
 
 `dumpTool.nds` and `UNLAUNCH.DSI` are placed on the root of the SD card
 
+Can now be used to update TWiLight Menu ++!
 
 ## Requirements:
 
