@@ -159,8 +159,8 @@ def start():
         #Move TWiLight Menu
         shutil.copy(temp + "DSi&3DS - SD card users/BOOT.NDS", directory)
         distutils.dir_util.copy_tree(temp + "_nds/" , directory +"/_nds/") 
-        distutils.dir_util.copy_tree(temp + "DSi - CFW users/SDNAND root/hiya", directory+"hiya/")
-        distutils.dir_util.copy_tree(temp + "DSi - CFW users/SDNAND root/title", directory+"hiya/")
+        distutils.dir_util.copy_tree(temp + "DSi - CFW users/SDNAND root/hiya", directory+"/hiya/")
+        distutils.dir_util.copy_tree(temp + "DSi - CFW users/SDNAND root/title", directory+"/hiya/")
         shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-nightly.nds", directory + "/_nds")
         shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-release.nds", directory + "/_nds")
         Path(directory + "/roms/").mkdir(parents=True,exist_ok=True)
