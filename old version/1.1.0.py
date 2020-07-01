@@ -128,8 +128,7 @@ def start():
         memoryPitDownload = memoryPitLinks[0]
 
     temp = directory + "/tmp/"
-    cwdtemp = os.getcwd() + "/lazy-dsi-file-downloader-tmp/"
-    Path(cwdtemp).mkdir(parents=True,exist_ok=True)
+    Path(temp).mkdir(parents=True,exist_ok=True)
 
     if downloadmemorypit.get() == 1:
         #Download Memory Pit
@@ -144,14 +143,14 @@ def start():
     if downloadtwlmenu.get() == 1:
         #Download TWiLight Menu
         r = requests.get(getLatestTWLmenu(), allow_redirects=True)
-        TWLmenuLocation = cwdtemp + "TWiLightMenu.7z"
+        TWLmenuLocation = temp + "TWiLightMenu.7z"
         open(TWLmenuLocation,'wb').write(r.content)
         outputbox("TWiLight Menu ++ Downloaded    ")
         print("TWiLight Menu ++ Downloaded")
-        print(TWLmenuLocation)
 
         #Extract TWiLight Menu
-        proc = Popen([_7za,"x", "-aoa", TWLmenuLocation, '-o'+cwdtemp, 'DSi - CFW users/SDNAND root/', '_nds', 'DSi&3DS - SD card users', 'roms', 'BOOT.NDS'])
+        proc = Popen([ _7za, 'x', TWLmenuLocation, '-y' , '-o' + temp, '_nds', 'DSi - CFW users',
+                'DSi&3DS - SD card users', 'roms' ])
         ret_val = proc.wait()
 
         while True:
@@ -161,12 +160,12 @@ def start():
                     break
 
         #Move TWiLight Menu
-        shutil.copy(cwdtemp + "DSi&3DS - SD card users/BOOT.NDS", directory)
-        distutils.dir_util.copy_tree(cwdtemp + "_nds/" , directory +"/_nds/") 
-        distutils.dir_util.copy_tree(cwdtemp + "DSi - CFW users/SDNAND root/hiya", directory+"/hiya/")
-        distutils.dir_util.copy_tree(cwdtemp + "DSi - CFW users/SDNAND root/title", directory+"/title/")
-        shutil.copy(cwdtemp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-nightly.nds", directory + "/_nds")
-        shutil.copy(cwdtemp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-release.nds", directory + "/_nds")
+        shutil.copy(temp + "DSi&3DS - SD card users/BOOT.NDS", directory)
+        distutils.dir_util.copy_tree(temp + "_nds/" , directory +"/_nds/") 
+        distutils.dir_util.copy_tree(temp + "DSi - CFW users/SDNAND root/hiya", directory+"/hiya/")
+        distutils.dir_util.copy_tree(temp + "DSi - CFW users/SDNAND root/title", directory+"/title/")
+        shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-nightly.nds", directory + "/_nds")
+        shutil.copy(temp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-release.nds", directory + "/_nds")
         Path(directory + "/roms/").mkdir(parents=True,exist_ok=True)
         print("TWiLight  Menu ++ placed in", directory)
         outputbox("TWiLight Menu ++ placed        ")
@@ -183,7 +182,7 @@ def start():
         #Download Unlaunch
         url = "https://problemkaputt.de/unlaunch.zip"
         r = requests.get(url, allow_redirects=True)
-        unlaunchLocation = cwdtemp + "unlaunch.zip"
+        unlaunchLocation = temp + "unlaunch.zip"
         open(unlaunchLocation,'wb').write(r.content)
         print("Unlaunch Downloaded")
         outputbox("Unlaunch Downloaded            ")
@@ -195,8 +194,7 @@ def start():
         
     
     #Delete tmp folder
-    shutil.rmtree(cwdtemp)
-    
+    shutil.rmtree(directory + '/tmp')
     print("Done!")
     outputbox("Done!")
 
