@@ -25,7 +25,8 @@ Can now be used to update TWiLight Menu ++!
 At least Python 3.5 with the Tkinter library
 
 
-## Credits:
+## Credits
+- [SNBeast](https://github.com/SNBeast) for testing, pointing out bugs and for being a huge help in general
 - [NightScript](https://github.com/NightYoshi370) for the idea 
 - [shutterbug2000](https://gbatemp.net/members/shutterbug2000.354863/) for creating Memory Pit
 - [TWiLight Menu ++ developers](https://github.com/DS-Homebrew/TWiLightMenu) for creating TWiLight Menu++
