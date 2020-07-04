@@ -7,6 +7,7 @@
 import tkinter 
 from tkinter import messagebox
 from tkinter import filedialog
+import tkinter.ttk
 import os
 import platform
 import sys
@@ -87,7 +88,12 @@ def un7zipper(_7za, zipfile, destination):
 
 
 def start():
-    outputBox.delete(0, tkinter.END)
+    
+    #Clear outputBox
+    outputBox.configure(state='normal')
+    outputBox.delete('1.0', tkinter.END)
+    outputBox.configure(state='disabled')
+
     sysname = platform.system()
     #Locate 7z binary
     _7za = os.path.join(sysname, '7za')
@@ -127,10 +133,7 @@ def start():
                 return
     print("7-Zip found!")
 
-    #Clear outputBox
-    outputBox.configure(state='normal')
-    outputBox.delete('1.0', tkinter.END)
-    outputBox.configure(state='disabled')
+    
     
     #Variables
     directory = SDentry.get()
@@ -182,6 +185,9 @@ def start():
         shutil.copy(cwdtemp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-nightly.nds", directory + "/_nds")
         shutil.copy(cwdtemp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-release.nds", directory + "/_nds")
         Path(directory + "/roms/").mkdir(parents=True,exist_ok=True)
+        #Some Homebrew write to the _nds folder so it is better to clear it first
+        shutil.rmtree(cwdtemp +"_nds/")
+        Path(cwdtemp +"_nds/").mkdir(parents=True,exist_ok=True)
 
         print("TWiLight  Menu ++ placed in", directory)
         outputbox("TWiLight Menu ++ placed        ")
@@ -208,9 +214,7 @@ def start():
         #Extract Unlaunch
         unzipper(unlaunchLocation,directory)
     
-    #Some Homebrew write to the _nds folder so it is better to clear it first
-    shutil.rmtree(cwdtemp +"_nds/")
-    Path(cwdtemp +"_nds/").mkdir(parents=True,exist_ok=True)
+    
 
     #Creates roms/nds if it does not exist
     roms = directory +"/roms/nds/"
@@ -240,7 +244,8 @@ def start():
                 else:
                     un7zipper(_7za, downloadLocation, cwdtemp)
                     if "root" in item["location"]:
-                        distutils.dir_util.copy_tree(cwdtemp+item["location"]["root"],directory+"/"+item["location"]["root"])
+                        Path(directory+(item["location"]["root"].split('/')).pop()).mkdir(parents=True,exist_ok=True)
+                        shutil.copy(cwdtemp+item["location"]["root"],directory+((item["location"]["root"].split('/')).pop().pop(0)))
                     if "roms" in item["location"]:
                         shutil.copy(cwdtemp+item["location"]["roms"],roms)
                     
@@ -271,13 +276,31 @@ def extraHomebrew():
         homebrewWindowLabel2 = tkinter.Label(homebrewWindow, text="Select additional homebrew for download then press OK")
         homebrewWindowLabel2.pack(anchor = "w")
         
+        vscrollbar = tkinter.Scrollbar(homebrewWindow)
+        canvas = tkinter.Canvas(homebrewWindow, yscrollcommand=vscrollbar.set)
+        vscrollbar.config(command=canvas.yview)
+        vscrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y) 
+
+        homebrewFrame = tkinter.Frame(canvas) 
+        homebrewWindow.title("Homebrew List")
+        homebrewWindow.resizable(0,0)
+        canvas.pack(side="left", fill="both", expand=True)
+        canvas.create_window(0,0, window=homebrewFrame, anchor="n")
         for count, x in enumerate(homebrewDB):
-            l = tkinter.Checkbutton(homebrewWindow, text=x["title"], variable=homebrewList[count])
+            l = tkinter.Checkbutton(homebrewFrame, text=x["title"] + " by " + x["author"], variable=homebrewList[count])
             l.pack(anchor = "w")
+       
+        frame = tkinter.ttk.Frame(homebrewWindow, relief=tkinter.RAISED, borderwidth=1)
+        frame.pack(fill=tkinter.BOTH, expand=True)
 
         okButton = tkinter.Button(homebrewWindow, text = "OK", font=("Verdana",12,"bold"), command=lambda:okButtonPress(homebrewWindow))
-        okButton.pack()
+        okButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
+        homebrewWindow.update()
+        canvas.config(scrollregion=canvas.bbox("all"))
+
         homebrewWindow.protocol("WM_DELETE_WINDOW",lambda:okButtonPress(homebrewWindow))
+
+
         
 
 if(sys.version_info.major < 3):
