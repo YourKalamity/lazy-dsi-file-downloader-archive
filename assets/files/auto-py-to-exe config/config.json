@@ -76,6 +76,14 @@
   {
    "optionDest": "datas",
    "value": "C:/Users/kalam/Documents/GitHub/just-a-dsi-cfw-installer/lazy.ico;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/kalam/Documents/GitHub/just-a-dsi-cfw-installer/chardet;chardet/"
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/kalam/Documents/GitHub/just-a-dsi-cfw-installer/idna;idna/"
   }
  ],
  "nonPyinstallerOptions": {
