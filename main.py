@@ -184,7 +184,7 @@ def start():
     if downloadtwlmenu.get() == 1:
         #Download TWiLight Menu
         outputbox("Downloading TWiLight Menu ++\n")
-        TWLmenuLocation = downloadFile(getLatestGitHub('DS-Homebrew/TWiLightMenu', 0),cwdtemp)
+        TWLmenuLocation = downloadFile(getLatestGitHub('DS-Homebrew/TWiLightMenu', 3),cwdtemp)
         if TWLmenuLocation != None:
             outputbox("TWiLight Menu ++ Downloaded\n")
             print("TWiLight Menu ++ Downloaded")
