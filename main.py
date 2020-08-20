@@ -248,13 +248,31 @@ def start():
 
         #Extract Unlaunch
         unzipper(unlaunchLocation,directory)
-    
-    
+
 
     #Creates roms/nds if it does not exist
     roms = directory +"/roms/nds/"
     Path(roms).mkdir(parents=True,exist_ok=True)
 
+    if godmode9i.get() == 1:
+        #Download GodMode9i
+        outputbox("Downloading GodMode9i\n")
+        downloadLocation = downloadFile(getLatestGitHub('DS-Homebrew/GodMode9i', 0), cwdtemp)
+        if downloadLocation != None:
+            print("GodMode9i downloaded")
+            outputbox("GodMode9i Downloaded\n")
+            lineCounter = lineCounter + 1
+            #Extract TWiLight Menu
+            proc = Popen([_7za,"x", "-aoa", downloadLocation, '-o'+roms, 'GodMode9i.nds'])
+            ret_val = proc.wait()
+
+            while True:
+                if ret_val  == 0:
+                    outputbox("GodMode9i Extracted\n")
+                    print("GodMode9i Extracted to", roms)
+                    break
+    
+    
     outputbox("Downloading other homebrew\n")
     lineCounter = lineCounter + 1
     print("Downloading other homebrew...")
@@ -443,14 +461,18 @@ def summonWindow2():
     first.grid(column=0,row=0, sticky="w")
     subtitle = tkinter.Label(topFrame, text='brewed at home', font=(subtitleFont), fg=foregroundColour)
     subtitle.grid(column=0,row=1,sticky="w")
-    downloadtwlmenuCheck = tkinter.Checkbutton(topFrame, text = "Download or Update TWiLight menu?",fg=foregroundColour, variable = downloadtwlmenu,font=(buttonFont))
+    downloadtwlmenuCheck = tkinter.Checkbutton(topFrame, text = "Download latest TWiLight Menu++ version?",fg=foregroundColour, variable = downloadtwlmenu,font=(buttonFont))
     downloadtwlmenuCheck.grid(column=0,row=2, sticky ="w")
-    downloaddumptoolCheck = tkinter.Checkbutton(topFrame, text ="Download dumpTool?", variable=downloaddumptool,fg=foregroundColour,font=(buttonFont))
+    downloaddumptoolCheck = tkinter.Checkbutton(topFrame, text ="Download latest dumpTool version?", variable=downloaddumptool,fg=foregroundColour,font=(buttonFont))
     downloaddumptoolCheck.grid(column=0,row=3,sticky="w")
-    unlaunchCheck = tkinter.Checkbutton(topFrame, text = "Download Unlaunch?", variable =unlaunch, fg=foregroundColour,font=(buttonFont))
+    unlaunchCheck = tkinter.Checkbutton(topFrame, text = "Download latest Unlaunch version?", variable =unlaunch, fg=foregroundColour,font=(buttonFont))
     unlaunchCheck.grid(column=0,row=4,sticky="w")
+    seperator = tkinter.Label(topFrame, text="───────────────────────────────────────────────────────────", font=(buttonFont), fg=foregroundColour)
+    seperator.grid(column=0,row=5,sticky="w")
+    GodMode9iCheck = tkinter.Checkbutton(topFrame, text = "Download latest GodMode9i version?", variable =godmode9i, fg=foregroundColour,font=(buttonFont))
+    GodMode9iCheck.grid(column=0,row=6,sticky="w")
     buttonExtraHomebrew = tkinter.Button(topFrame, text = "Additional homebrew...", command =lambda:[extraHomebrew(window)], fg=foregroundColour,font=(buttonFont),bg=buttonColour)
-    buttonExtraHomebrew.grid(column=0,row=5,sticky="w",pady=5)
+    buttonExtraHomebrew.grid(column=0,row=7,sticky="w",pady=5)
     backButton = tkinter.Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow1()], width="8")
     backButton.pack(side=tkinter.LEFT)
     nextButton = tkinter.Button(bottomFrame, text="Next",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow3()])
@@ -518,8 +540,6 @@ def summonWindow5():
     bottomFrame.option_add("*Background", backgroundColour)
     first = tkinter.Label(topFrame, text="Completed", font=(titleFont), fg=foregroundColour)
     first.grid(column=0,row=0, sticky="w")
-    subtitle = tkinter.Label(topFrame, text='all done!', font=(subtitleFont), fg=foregroundColour)
-    subtitle.grid(column=0,row=1,sticky="w")
     label= tkinter.Label(topFrame,text="Your SD card is now ready to run and use Homebrew on your Nintendo DSi.",font=(bodyFont),fg=foregroundColour,wraplength=450,justify="left")
     label.grid(column=0,row=2,sticky="w")
     labellink= tkinter.Label(topFrame,text="You can now eject your SD card and follow the steps of https://dsi.cfw.guide/",font=(bodyFont),fg=foregroundColour,wraplength=450,justify="left")
@@ -562,6 +582,7 @@ firmwareVersion.set(dsiVersions[0])
 downloadtwlmenu = tkinter.IntVar(value=1)
 downloaddumptool = tkinter.IntVar(value=1)
 unlaunch = tkinter.IntVar(value=0)
+godmode9i = tkinter.IntVar(value=0)
 
 
 #Fonts
