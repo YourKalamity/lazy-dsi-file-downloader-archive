@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 # Created by YourKalamity
 #https://github.com/YourKalamity/lazy-dsi-file-downloader    
