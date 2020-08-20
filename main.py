@@ -321,9 +321,9 @@ def extraHomebrew(source):
         homebrewWindow = tkinter.Toplevel(source)
         homebrewWindow.config(bg="#f0f0f0")
         source.withdraw()
-        homebrewWindowLabel = tkinter.Label(homebrewWindow, text="Homebrew List",font=("Segoe UI",12,"bold"),bg="#f0f0f0")
+        homebrewWindowLabel = tkinter.Label(homebrewWindow, text="Homebrew List",font=("Segoe UI",12,"bold"),bg="#f0f0f0",fg="#000000")
         homebrewWindowLabel.pack(anchor = "w")
-        homebrewWindowLabel2 = tkinter.Label(homebrewWindow, text="Select additional homebrew for download then press OK", font=(bodyFont),bg="#f0f0f0")
+        homebrewWindowLabel2 = tkinter.Label(homebrewWindow, text="Select additional homebrew for download then press OK", font=(bodyFont),bg="#f0f0f0",fg="#000000")
         homebrewWindowLabel2.pack(anchor = "w")
         
         vscrollbar = tkinter.Scrollbar(homebrewWindow)
@@ -340,7 +340,7 @@ def extraHomebrew(source):
         canvas.pack(side="left", fill="both", expand=True)
         canvas.create_window(0,0, window=homebrewFrame, anchor="n")
         for count, x in enumerate(homebrewDB):
-            l = tkinter.Checkbutton(homebrewFrame, text=x["title"] + " by " + x["author"],font=(bigListFont), variable=homebrewList[count],bg="#f0f0f0")
+            l = tkinter.Checkbutton(homebrewFrame, text=x["title"] + " by " + x["author"],font=(bigListFont), variable=homebrewList[count],bg="#f0f0f0",fg="#000000")
             l.config(selectcolor="#F0F0F0")
             l.pack(anchor = "w")
        
@@ -348,7 +348,7 @@ def extraHomebrew(source):
         frame.pack(fill=tkinter.BOTH, expand=True)
 
 
-        okButton = tkinter.Button(homebrewWindow, text = "OK", font=(buttonFont), command=lambda:okButtonPress(homebrewWindow,source),bg="#f0f0f0")
+        okButton = tkinter.Button(homebrewWindow, text = "OK", font=(buttonFont), command=lambda:okButtonPress(homebrewWindow,source),bg="#f0f0f0",fg="#000000")
         okButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
         homebrewWindow.update()
         canvas.config(scrollregion=canvas.bbox("all"))
