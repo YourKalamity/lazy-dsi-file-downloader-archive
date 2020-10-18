@@ -6,8 +6,7 @@
 
 #Import libraries
 import tkinter 
-from tkinter import messagebox
-from tkinter import filedialog
+from tkinter import messagebox, filedialog
 import tkinter.font
 import tkinter.ttk
 import os
@@ -44,7 +43,8 @@ def downloadFile(link, destination):
     except ConnectionError:
         print("File not available, skipping...")
         return None
-    
+
+#Used to verify if file has been downloaded properly
 def hashcreator(filetobechecked):
     string = hashlib.blake2b(open(filetobechecked,'rb').read()).hexdigest()
     return string
@@ -88,11 +88,13 @@ def validateDirectory(directory):
         else:
             return True
 
+#Unzips .zip files
 def unzipper(unzipped, destination):
     with zipfile.ZipFile(unzipped, 'r') as zip_ref:
             zip_ref.extractall(destination)
             zip_ref.close()
 
+#Unzips .7z files
 def un7zipper(_7za, zipfile, destination):
     proc = Popen([_7za,"x", "-aoa", zipfile, '-o'+destination])
 
@@ -103,7 +105,7 @@ def un7zipper(_7za, zipfile, destination):
             break
 
 
-
+#Main "install" process
 def start():
     
     #Clear outputBox
@@ -153,7 +155,7 @@ def start():
 
     lineCounter = 0
     
-    #Variables
+    #Get variables from tkinter
     directory = SDentry
     version = firmwareVersion.get()
     unlaunchNeeded = unlaunch.get()
@@ -168,7 +170,7 @@ def start():
     elif dsiVersions.index(version) in [0,2]:
         memoryPitDownload = memoryPitLinks[0]
 
-    #Creates a path called "/lazy-dsi-file-downloader-tmp/" if it does not exist
+    #Creates a temporary path called "/lazy-dsi-file-downloader-tmp/" if it does not exist
     cwdtemp = os.getcwd() + "/lazy-dsi-file-downloader-tmp/"
     Path(cwdtemp).mkdir(parents=True,exist_ok=True)
 
@@ -277,7 +279,8 @@ def start():
     lineCounter = lineCounter + 1
     print("Downloading other homebrew...")
 
-
+    
+    #Downloads for homebrew options selected in "other homebrew" list
     for count, item in enumerate(homebrewDB):
         if homebrewList[count].get() == 1:
             print("Downloading "+item["title"])
@@ -324,17 +327,18 @@ def start():
     outputbox("Done!\n")
     outputbox("Press the Finish button to continue... \n")
 
-        
+#Tkinter directory popup dialog
 def chooseDir(source,SDentry):
     source.sourceFolder =  filedialog.askdirectory(parent=source, initialdir= "/", title='Please select the directory of your SD card')
     SDentry.delete(0, tkinter.END)
     SDentry.insert(0, source.sourceFolder)
 
-
+#Used to close additional homebrew menu
 def okButtonPress(self,source):
     self.destroy()
     source.deiconify()
 
+ #Extra homebrew window list
 def extraHomebrew(source):
         homebrewWindow = tkinter.Toplevel(source)
         homebrewWindow.config(bg="#f0f0f0")
@@ -380,6 +384,7 @@ def closeButtonPress(source):
 def nextWindow(windownumbertosummon):
     globals()["summonWindow"+windownumbertosummon]
 
+#Needed to disable buttons
 def donothing():
     return
 
