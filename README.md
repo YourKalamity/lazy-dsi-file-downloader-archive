@@ -1,6 +1,6 @@
 # Lazy DSi file downloader (for dsi.cfw.guide)
 
-![a screenshot of the program](https://github.com/YourKalamity/lazy-dsi-file-downloader/raw/master/assets/files/screenshots/app%20v2.0.0.png "Lazy DSi file downloader on Windows 10")
+![a screenshot of the program](https://github.com/YourKalamity/lazy-dsi-file-downloader/raw/master/assets/files/screenshots/app%20v3.0.0.png "Lazy DSi file downloader on Windows 10")
 
 Automatically downloads 
 - Memory Pit
