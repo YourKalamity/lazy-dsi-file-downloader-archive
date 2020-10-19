@@ -185,13 +185,13 @@ def start():
     if downloadtwlmenu.get() == 1:
         #Download TWiLight Menu
         outputbox("Downloading TWiLight Menu ++\n")
-        TWLmenuLocation = downloadFile(getLatestGitHub('DS-Homebrew/TWiLightMenu', 3),cwdtemp)
+        TWLmenuLocation = downloadFile(getLatestGitHub('DS-Homebrew/TWiLightMenu', 1),cwdtemp)
         if TWLmenuLocation != None:
             outputbox("TWiLight Menu ++ Downloaded\n")
             print("TWiLight Menu ++ Downloaded")
 
             #Extract TWiLight Menu
-            proc = Popen([_7za,"x", "-aoa", TWLmenuLocation, '-o'+cwdtemp, 'DSi - CFW users/SDNAND root/', '_nds', 'DSi&3DS - SD card users', 'roms', 'BOOT.NDS'])
+            proc = Popen([_7za,"x", "-aoa", TWLmenuLocation, '-o'+cwdtemp, '_nds', 'hiya', 'roms','title', 'BOOT.NDS','snemul.cfg'])
             ret_val = proc.wait()
 
             while True:
@@ -199,16 +199,15 @@ def start():
                     outputbox("TWiLight Menu ++ Extracted\n")
                     print("TWiLight Menu ++ Extracted to", cwdtemp)
                     break
-            originalHash = hashcreator(cwdtemp + "DSi&3DS - SD card users/BOOT.NDS")
+            originalHash = hashcreator(cwdtemp + "BOOT.NDS")
 
             #Move TWiLight Menu
-            shutil.copy(cwdtemp + "DSi&3DS - SD card users/BOOT.NDS", directory)
+            shutil.copy(cwdtemp + "BOOT.NDS", directory)
             distutils.dir_util.copy_tree(cwdtemp + "_nds/" , directory +"/_nds/") 
-            distutils.dir_util.copy_tree(cwdtemp + "DSi - CFW users/SDNAND root/hiya", directory+"/hiya/")
-            distutils.dir_util.copy_tree(cwdtemp + "DSi - CFW users/SDNAND root/title", directory+"/title/")
-            shutil.copy(cwdtemp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-nightly.nds", directory + "/_nds")
-            shutil.copy(cwdtemp + "DSi&3DS - SD card users/_nds/nds-bootstrap-hb-release.nds", directory + "/_nds")
-            Path(directory + "/roms/").mkdir(parents=True,exist_ok=True)
+            distutils.dir_util.copy_tree(cwdtemp + "hiya", directory+"/hiya/")
+            distutils.dir_util.copy_tree(cwdtemp + "title", directory+"/title/")
+            distutils.dir_util.copy_tree(cwdtemp + "roms", directory+"/roms/")
+
             #Some Homebrew write to the _nds folder so it is better to clear it first
             shutil.rmtree(cwdtemp +"_nds/")
             Path(cwdtemp +"_nds/").mkdir(parents=True,exist_ok=True)
