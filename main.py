@@ -38,6 +38,8 @@ def downloadFile(link, destination):
         r = requests.get(link, allow_redirects=True)
         if link.find('/'):
             fileName = link.rsplit('/', 1)[1]
+        if destination.endswith("/") == False:
+            destination = destination + "/"
         downloadLocation = destination + fileName
         open(downloadLocation, 'wb').write(r.content)
         return downloadLocation
@@ -203,10 +205,12 @@ def start():
 
             #Move TWiLight Menu
             shutil.copy(cwdtemp + "BOOT.NDS", directory)
+            
             distutils.dir_util.copy_tree(cwdtemp + "_nds/" , directory +"/_nds/") 
             distutils.dir_util.copy_tree(cwdtemp + "hiya", directory+"/hiya/")
             distutils.dir_util.copy_tree(cwdtemp + "title", directory+"/title/")
             distutils.dir_util.copy_tree(cwdtemp + "roms", directory+"/roms/")
+
 
             #Some Homebrew write to the _nds folder so it is better to clear it first
             shutil.rmtree(cwdtemp +"_nds/")
@@ -271,7 +275,7 @@ def start():
                     print("GodMode9i Extracted to", roms)
                     break
     
-    
+
     outputbox("Downloading other homebrew\n")
     lineCounter = lineCounter + 1
     print("Downloading other homebrew...")
@@ -470,8 +474,10 @@ def summonWindow2():
     seperator.grid(column=0,row=5,sticky="w")
     GodMode9iCheck = tkinter.Checkbutton(topFrame, text = "Download latest GodMode9i version?", variable =godmode9i, fg=foregroundColour,font=(buttonFont))
     GodMode9iCheck.grid(column=0,row=6,sticky="w")
+    updateHiyaCheck = tkinter.Checkbutton(topFrame, text = "Update hiyaCFW? (must have run hiyaHelper once before)", variable =godmode9i, fg=foregroundColour,font=(buttonFont))
+    updateHiyaCheck.grid(column=0,row=7,sticky="w")
     buttonExtraHomebrew = tkinter.Button(topFrame, text = "Additional homebrew...", command =lambda:[extraHomebrew(window)], fg=foregroundColour,font=(buttonFont),bg=buttonColour)
-    buttonExtraHomebrew.grid(column=0,row=7,sticky="w",pady=5)
+    buttonExtraHomebrew.grid(column=0,row=8,sticky="w",pady=5)
     backButton = tkinter.Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow1()], width="8")
     backButton.pack(side=tkinter.LEFT)
     nextButton = tkinter.Button(bottomFrame, text="Next",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow3()])
@@ -582,7 +588,7 @@ downloadtwlmenu = tkinter.IntVar(value=1)
 downloaddumptool = tkinter.IntVar(value=1)
 unlaunch = tkinter.IntVar(value=0)
 godmode9i = tkinter.IntVar(value=0)
-
+updateHiyaCFW = tkinter.IntVar(value=0)
 
 #Fonts
 titleFont = tkinter.font.Font( 
