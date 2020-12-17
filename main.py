@@ -249,8 +249,8 @@ def start():
             outputbox("Unlaunch Downloaded\n")
             lineCounter = lineCounter + 1
 
-        #Extract Unlaunch
-        unzipper(unlaunchLocation,directory)
+            #Extract Unlaunch
+            unzipper(unlaunchLocation,directory)
 
 
     #Creates roms/nds if it does not exist
@@ -275,6 +275,24 @@ def start():
                     print("GodMode9i Extracted to", roms)
                     break
     
+    if updateHiyaCFW.get() == 1:
+        #Check if old hiyaCFW insallation exists
+        outputbox("Checking for hiyaCFW\n")
+        if os.path.isfile(directory+"/hiya.dsi"):
+            outputbox("hiyaCFW found...\n")
+            outputbox("Downloading latest...\n")
+            downloadLocation = downloadFile(getLatestGitHub("RocketRobz/hiyaCFW",0),cwdtemp)
+            if downloadLocation != None:
+                outputbox("hiyaCFW.7z downloaded\n")
+                os.remove(directory+"/hiya.dsi")
+                proc = Popen([_7za,"x","-aoa",downloadLocation, "-o"+directory,"for SDNAND SD card\hiya.dsi"])
+                ret_val = proc
+
+                
+        else:
+            outputbox("hiya.dsi was not found\n")
+            outputbox("Please run the hiyaCFW helper first")
+
 
     outputbox("Downloading other homebrew\n")
     lineCounter = lineCounter + 1
@@ -474,7 +492,7 @@ def summonWindow2():
     seperator.grid(column=0,row=5,sticky="w")
     GodMode9iCheck = tkinter.Checkbutton(topFrame, text = "Download latest GodMode9i version?", variable =godmode9i, fg=foregroundColour,font=(buttonFont))
     GodMode9iCheck.grid(column=0,row=6,sticky="w")
-    updateHiyaCheck = tkinter.Checkbutton(topFrame, text = "Update hiyaCFW? (must have run hiyaHelper once before)", variable =godmode9i, fg=foregroundColour,font=(buttonFont))
+    updateHiyaCheck = tkinter.Checkbutton(topFrame, text = "Update hiyaCFW? (must have run hiyaHelper once before)", variable =updateHiyaCFW, fg=foregroundColour,font=(buttonFont))
     updateHiyaCheck.grid(column=0,row=7,sticky="w")
     buttonExtraHomebrew = tkinter.Button(topFrame, text = "Additional homebrew...", command =lambda:[extraHomebrew(window)], fg=foregroundColour,font=(buttonFont),bg=buttonColour)
     buttonExtraHomebrew.grid(column=0,row=8,sticky="w",pady=5)
@@ -578,7 +596,7 @@ homebrewDB = json.loads(requests.get('https://raw.githubusercontent.com/YourKala
 homebrewList = []
 for x in homebrewDB:
     homebrewList.append(tkinter.IntVar())
-homebrewList[0] = tkinter.IntVar(value=1)
+
 
 #TKinter Vars
 downloadmemorypit = tkinter.IntVar(value=1)
