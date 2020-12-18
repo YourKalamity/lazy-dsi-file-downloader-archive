@@ -4,11 +4,11 @@ on:
   release:
     types: [created]
 
-#
+######################################################################################
 # Based off of :
 # https://github.com/mondul/HiyaCFW-Helper/blob/master/.github/workflows/make-dist.yml
 # Thanks to Epicpkmn11 for helping with this
-#
+######################################################################################
 
 jobs:
   windows:
