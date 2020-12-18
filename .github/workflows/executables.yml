@@ -1,0 +1,91 @@
+name: Compile into Executables
+
+on:
+  release:
+    types: [created]
+
+#
+# Based off of :
+# https://github.com/mondul/HiyaCFW-Helper/blob/master/.github/workflows/make-dist.yml
+# Thanks to Epicpkmn11 for helping with this
+#
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    name: Windows
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+          architecture: "x86"
+      - name: Install pyinstaller
+        run: |
+          pip3 install certifi pyinstaller
+      - name: Get tag
+        id: vars
+        shell: bash
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Make binary
+        run: |
+          pyinstaller --onefile ^
+                      --add-data "certifi;certifi" ^
+                      --add-data "requests;requests" ^
+                      --add-data "urllib3;urllib3" ^
+                      --add-data "lazy.ico;." ^
+                      --add-data "chardet;chardet" ^
+                      --icon "lazy.ico" ^
+                      --console ^
+                      --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}" ^
+                      main.py
+          cd dist
+      - name: Publish builds
+        uses: actions/upload-artifact@v2
+        with:
+          path: lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}.exe
+          name: windows
+
+  python:
+    runs-on: ubuntu-latest
+    name: Python 3 build
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Get tag
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Make zip
+        run: |
+          mkdir temporary
+          cp -r certifi chardet Darwin idna Linux requests urllib3 temporary/
+          cp LICENSE main.py README.md temporary/
+          zip lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip temporary
+      - name: Publish artifact
+        uses: actions/upload-artifact@v2
+        with:
+          path: lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip
+          name: python
+
+  publish:
+    runs-on: ubuntu-latest
+    name: Publish builds
+    if: ${{ success() }}
+    needs: [windows,python]
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifacts@v2
+      - name: Upload to Release
+        run: |
+          ID=$(jq --raw-output '.release.id' $GITHUB_EVENT_PATH)
+
+          for file in ${{ github.workspace }}/*/*; do
+            AUTH_HEADER="Authorization: token ${{ secrets.GITHUB_TOKEN }}"
+            CONTENT_LENGTH="Content-Length: $(stat -c%s $file)"
+            CONTENT_TYPE="Content-Type: application/octet-stream"
+            UPLOAD_URL="https://uploads.github.com/repos/${{ github.repository }}/releases/$ID/assets?name=$(basename $file)"
+            curl -XPOST -H "$AUTH_HEADER" -H "$CONTENT_LENGTH" -H "$CONTENT_TYPE" --upload-file "$file" "$UPLOAD_URL"
+          done      
+      
