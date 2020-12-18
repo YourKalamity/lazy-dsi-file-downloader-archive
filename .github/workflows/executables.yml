@@ -31,16 +31,7 @@ jobs:
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Make binary
         run: |
-          pyinstaller --onefile ^
-                      --add-data "certifi;certifi" ^
-                      --add-data "requests;requests" ^
-                      --add-data "urllib3;urllib3" ^
-                      --add-data "lazy.ico;." ^
-                      --add-data "chardet;chardet" ^
-                      --icon "lazy.ico" ^
-                      --console ^
-                      --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}" ^
-                      main.py
+          pyinstaller --onefile --add-data "certifi;certifi" --add-data "requests;requests" --add-data "urllib3;urllib3" --add-data "lazy.ico;." --add-data "chardet;chardet" --icon "lazy.ico" --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}" main.py
           cd dist
       - name: Publish builds
         uses: actions/upload-artifact@v2
