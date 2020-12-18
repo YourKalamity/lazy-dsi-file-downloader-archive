@@ -157,6 +157,8 @@ def start():
     
     #Variables
     directory = SDentry
+    if directory.endswith("\\") or directory.endswith("/"):
+        directory = directory[:-1]
     version = firmwareVersion.get()
     unlaunchNeeded = unlaunch.get()
 
@@ -287,6 +289,8 @@ def start():
                 os.remove(directory+"/hiya.dsi")
                 proc = Popen([_7za,"x","-aoa",downloadLocation, "-o"+directory,"for SDNAND SD card\hiya.dsi"])
                 ret_val = proc
+                shutil.move(directory+"/for SDNAND SD card/hiya.dsi",directory+"/hiya.dsi")
+                shutil.rmtree(directory+"/for SDNAND SD card/")
 
                 
         else:
