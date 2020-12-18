@@ -67,7 +67,7 @@ jobs:
     needs: [windows,python]
     steps:
       - name: Download artifacts
-        uses: actions/download-artifacts@v2
+        uses: actions/download-artifact@v2
       - name: Upload to Release
         run: |
           ID=$(jq --raw-output '.release.id' $GITHUB_EVENT_PATH)
