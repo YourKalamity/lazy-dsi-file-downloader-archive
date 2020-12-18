@@ -36,7 +36,7 @@ jobs:
       - name: Publish builds
         uses: actions/upload-artifact@v2
         with:
-          path: lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}.exe
+          path: dist/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}.exe
           name: windows
 
   python:
