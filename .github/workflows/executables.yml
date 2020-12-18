@@ -53,7 +53,8 @@ jobs:
           mkdir temporary
           cp -r certifi chardet Darwin idna Linux requests urllib3 temporary/
           cp LICENSE main.py README.md temporary/
-          zip -r lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip temporary
+          cd temporary
+          zip -r ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip * 
       - name: Publish artifact
         uses: actions/upload-artifact@v2
         with:
