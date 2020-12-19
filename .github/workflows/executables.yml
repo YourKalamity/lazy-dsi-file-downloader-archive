@@ -2,7 +2,7 @@ name: Compile into Executables
 
 on:
   release:
-    types: [published]
+    types: [created]
 
 ######################################################################################
 # Based off of :
