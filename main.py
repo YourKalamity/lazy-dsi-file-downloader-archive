@@ -439,8 +439,8 @@ def summonWindow0():
     
     discordButton = Button(bottomFrame, text="DS⁽ⁱ⁾ Mode Hacking Discord server", fg=foregroundColour,bg=buttonColour, font=(buttonFont),command=lambda:webbrowser.open("https://discord.gg/yD3spjv",new=1))
     discordButton.pack(side=tkinter.LEFT, padx="5", pady="5")
-    nextButton = Button(bottomFrame, text="Next",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow1()])
-    nextButton.pack(side=tkinter.RIGHT, padx="5", pady="5")
+    nextButton = Button(bottomFrame, text="Next",width=button_width, fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow1()])
+    nextButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
 
     window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
     
@@ -467,10 +467,10 @@ def summonWindow1():
     selector["menu"].config(bg=buttonColour,fg=foregroundColour,font=(buttonFont))
     selector.grid(column=0,row=5,sticky="w")
 
-    backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow0()], width="8")
+    backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow0()], width=button_width)
     backButton.pack(side=tkinter.LEFT)
-    nextButton = Button(bottomFrame, text="Next",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow2()])
-    nextButton.pack(side=tkinter.RIGHT, padx="5", pady="5")
+    nextButton = Button(bottomFrame, text="Next",width=button_width, fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow2()])
+    nextButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
     window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
 
 
@@ -500,10 +500,10 @@ def summonWindow2():
     updateHiyaCheck.grid(column=0,row=7,sticky="w")
     buttonExtraHomebrew = tkinter.Button(topFrame, text = "Additional homebrew...", command =lambda:[extraHomebrew(window)], fg=foregroundColour,font=(buttonFont),bg=buttonColour)
     buttonExtraHomebrew.grid(column=0,row=8,sticky="w",pady=5)
-    backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow1()], width="8")
+    backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow1()], width=button_width)
     backButton.pack(side=tkinter.LEFT)
-    nextButton = Button(bottomFrame, text="Next",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow3()])
-    nextButton.pack(side=tkinter.RIGHT, padx="5", pady="5")
+    nextButton = Button(bottomFrame, text="Next",width=button_width, fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow3()])
+    nextButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
     window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
 
 def summonWindow3():
@@ -521,12 +521,12 @@ def summonWindow3():
     noticeLabel.grid(column=0,row=2,sticky="w")
     SDentry = tkinter.Entry(topFrame, fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=25)
     SDentry.grid(column=0, row=3,sticky="w")
-    chooseDirButton = Button(topFrame, text = "Click to select folder", command =lambda:chooseDir(topFrame,SDentry),fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=25)
+    chooseDirButton = Button(topFrame, text = "Click to select folder", command =lambda:chooseDir(topFrame,SDentry),fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=folder_width)
     chooseDirButton.grid(column=0, row=4,sticky="w",pady=5)
-    backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow2()], width="8")
+    backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow2()], width=button_width)
     backButton.pack(side=tkinter.LEFT)
-    nextButton = Button(bottomFrame, text="Start",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[globalify(SDentry.get()),topFrame.destroy(),bottomFrame.destroy(),summonWindow4()])
-    nextButton.pack(side=tkinter.RIGHT, padx="5", pady="5")
+    nextButton = Button(bottomFrame, text="Start",width=button_width, fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[globalify(SDentry.get()),topFrame.destroy(),bottomFrame.destroy(),summonWindow4()])
+    nextButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
     window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
 
 def globalify(value):
@@ -550,11 +550,11 @@ def summonWindow4():
     outputBox.grid(column=0,row=2,sticky="w")
     startThread.start()
     global finalbackButton
-    finalbackButton = Button(bottomFrame,state="disabled",  text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow3()], width="8")
+    finalbackButton = Button(bottomFrame,state="disabled",  text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow3()], width=button_width)
     finalbackButton.pack(side=tkinter.LEFT)
     global finalnextButton
-    finalnextButton = Button(bottomFrame, state="disabled", text="Finish",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow5()])
-    finalnextButton.pack(side=tkinter.RIGHT, padx="5", pady="5")
+    finalnextButton = Button(bottomFrame, state="disabled", text="Finish",width=button_width, fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow5()])
+    finalnextButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
     window.protocol("WM_DELETE_WINDOW",lambda:donothing)
 
 def summonWindow5():
@@ -582,8 +582,8 @@ def summonWindow5():
         w = w + 1
     label= tkinter.Label(topFrame,text="Press the Close button to Exit",font=(bodyFont),fg=foregroundColour)
     label.grid(column=0,row=w+1,sticky="w")
-    finish = Button(bottomFrame, text="Close",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),closeButtonPress(window)])
-    finish.pack(side=tkinter.RIGHT, padx="5", pady="5")
+    finish = Button(bottomFrame, text="Close",width=button_width, fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),closeButtonPress(window)])
+    finish.pack(side=tkinter.RIGHT, padx=5, pady=5)
     window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
 
 
@@ -656,6 +656,8 @@ if __name__ == "__main__":
         buttonColour = "#f0f0f0"
         backButtonColour = "#f0f0f0"
         nextButtonColour = "#f0f0f0"
+        button_width = 80
+        folder_width = 250
 
 
     else: #Non Jeve Stobs worshippers
@@ -665,6 +667,8 @@ if __name__ == "__main__":
         buttonColour = "#7289DA"
         backButtonColour = "#567487"
         nextButtonColour = "#027b76"
+        button_width = 8
+        folder_width = 25
 
     summonWindow0()
     root.mainloop()

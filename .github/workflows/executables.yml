@@ -3,6 +3,7 @@ name: Compile into Executables
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 ######################################################################################
 # Based off of :
