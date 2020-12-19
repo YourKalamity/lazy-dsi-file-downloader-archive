@@ -391,7 +391,7 @@ def extraHomebrew(source):
         frame.pack(fill=tkinter.BOTH, expand=True)
 
 
-        okButton = tkinter.Button(homebrewWindow, text = "OK", font=(buttonFont), command=lambda:okButtonPress(homebrewWindow,source),bg="#f0f0f0",fg="#000000")
+        okButton = Button(homebrewWindow, text = "OK", font=(buttonFont), command=lambda:okButtonPress(homebrewWindow,source),bg="#f0f0f0",fg="#000000")
         okButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
         homebrewWindow.update()
         canvas.config(scrollregion=canvas.bbox("all"))
@@ -437,9 +437,9 @@ def summonWindow0():
         bullet = tkinter.Label(topFrame, text=x, font=(paragraphFont),fg=foregroundColour,wraplength=450, justify="left")
         bullet.grid(column=0,row=count+3, sticky="w", padx=5)
     
-    discordButton = tkinter.Button(bottomFrame, text="DS⁽ⁱ⁾ Mode Hacking Discord server", fg=foregroundColour,bg=buttonColour, font=(buttonFont),command=lambda:webbrowser.open("https://discord.gg/yD3spjv",new=1))
+    discordButton = Button(bottomFrame, text="DS⁽ⁱ⁾ Mode Hacking Discord server", fg=foregroundColour,bg=buttonColour, font=(buttonFont),command=lambda:webbrowser.open("https://discord.gg/yD3spjv",new=1))
     discordButton.pack(side=tkinter.LEFT, padx="5", pady="5")
-    nextButton = tkinter.Button(bottomFrame, text="Next",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow1()])
+    nextButton = Button(bottomFrame, text="Next",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow1()])
     nextButton.pack(side=tkinter.RIGHT, padx="5", pady="5")
 
     window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
@@ -467,9 +467,9 @@ def summonWindow1():
     selector["menu"].config(bg=buttonColour,fg=foregroundColour,font=(buttonFont))
     selector.grid(column=0,row=5,sticky="w")
 
-    backButton = tkinter.Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow0()], width="8")
+    backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow0()], width="8")
     backButton.pack(side=tkinter.LEFT)
-    nextButton = tkinter.Button(bottomFrame, text="Next",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow2()])
+    nextButton = Button(bottomFrame, text="Next",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow2()])
     nextButton.pack(side=tkinter.RIGHT, padx="5", pady="5")
     window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
 
@@ -500,9 +500,9 @@ def summonWindow2():
     updateHiyaCheck.grid(column=0,row=7,sticky="w")
     buttonExtraHomebrew = tkinter.Button(topFrame, text = "Additional homebrew...", command =lambda:[extraHomebrew(window)], fg=foregroundColour,font=(buttonFont),bg=buttonColour)
     buttonExtraHomebrew.grid(column=0,row=8,sticky="w",pady=5)
-    backButton = tkinter.Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow1()], width="8")
+    backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow1()], width="8")
     backButton.pack(side=tkinter.LEFT)
-    nextButton = tkinter.Button(bottomFrame, text="Next",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow3()])
+    nextButton = Button(bottomFrame, text="Next",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow3()])
     nextButton.pack(side=tkinter.RIGHT, padx="5", pady="5")
     window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
 
@@ -521,11 +521,11 @@ def summonWindow3():
     noticeLabel.grid(column=0,row=2,sticky="w")
     SDentry = tkinter.Entry(topFrame, fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=25)
     SDentry.grid(column=0, row=3,sticky="w")
-    chooseDirButton = tkinter.Button(topFrame, text = "Click to select folder", command =lambda:chooseDir(topFrame,SDentry),fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=25)
+    chooseDirButton = Button(topFrame, text = "Click to select folder", command =lambda:chooseDir(topFrame,SDentry),fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=25)
     chooseDirButton.grid(column=0, row=4,sticky="w",pady=5)
-    backButton = tkinter.Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow2()], width="8")
+    backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow2()], width="8")
     backButton.pack(side=tkinter.LEFT)
-    nextButton = tkinter.Button(bottomFrame, text="Start",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[globalify(SDentry.get()),topFrame.destroy(),bottomFrame.destroy(),summonWindow4()])
+    nextButton = Button(bottomFrame, text="Start",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[globalify(SDentry.get()),topFrame.destroy(),bottomFrame.destroy(),summonWindow4()])
     nextButton.pack(side=tkinter.RIGHT, padx="5", pady="5")
     window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
 
@@ -550,10 +550,10 @@ def summonWindow4():
     outputBox.grid(column=0,row=2,sticky="w")
     startThread.start()
     global finalbackButton
-    finalbackButton = tkinter.Button(bottomFrame,state="disabled",  text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow3()], width="8")
+    finalbackButton = Button(bottomFrame,state="disabled",  text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow3()], width="8")
     finalbackButton.pack(side=tkinter.LEFT)
     global finalnextButton
-    finalnextButton = tkinter.Button(bottomFrame, state="disabled", text="Finish",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow5()])
+    finalnextButton = Button(bottomFrame, state="disabled", text="Finish",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow5()])
     finalnextButton.pack(side=tkinter.RIGHT, padx="5", pady="5")
     window.protocol("WM_DELETE_WINDOW",lambda:donothing)
 
@@ -582,84 +582,89 @@ def summonWindow5():
         w = w + 1
     label= tkinter.Label(topFrame,text="Press the Close button to Exit",font=(bodyFont),fg=foregroundColour)
     label.grid(column=0,row=w+1,sticky="w")
-    finish = tkinter.Button(bottomFrame, text="Close",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),closeButtonPress(window)])
+    finish = Button(bottomFrame, text="Close",width="8", fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),closeButtonPress(window)])
     finish.pack(side=tkinter.RIGHT, padx="5", pady="5")
     window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
 
 
-if(sys.version_info.major < 3):
-        print("This program will ONLY work on Python 3 and above")
-        sys.exit()
+if __name__ == "__main__":
 
-root = tkinter.Tk()
-window = tkinter.Toplevel(root)
-root.withdraw()
+    if(sys.version_info.major < 3):
+            print("This program will ONLY work on Python 3 and above")
+            sys.exit()
 
-#Homebrew Database
-homebrewDB = json.loads(requests.get('https://raw.githubusercontent.com/YourKalamity/just-a-dsi-DB/master/just-a-dsi-DB.json').content)
-homebrewList = []
-for x in homebrewDB:
-    homebrewList.append(tkinter.IntVar())
+    root = tkinter.Tk()
+    window = tkinter.Toplevel(root)
+    root.withdraw()
+
+    #Homebrew Database
+    homebrewDB = json.loads(requests.get('https://raw.githubusercontent.com/YourKalamity/just-a-dsi-DB/master/just-a-dsi-DB.json').content)
+    homebrewList = []
+    for x in homebrewDB:
+        homebrewList.append(tkinter.IntVar())
 
 
-#TKinter Vars
-downloadmemorypit = tkinter.IntVar(value=1)
-firmwareVersion = tkinter.StringVar()
-firmwareVersion.set(dsiVersions[0])
-downloadtwlmenu = tkinter.IntVar(value=1)
-downloaddumptool = tkinter.IntVar(value=1)
-unlaunch = tkinter.IntVar(value=0)
-godmode9i = tkinter.IntVar(value=0)
-updateHiyaCFW = tkinter.IntVar(value=0)
+    #TKinter Vars
+    downloadmemorypit = tkinter.IntVar(value=1)
+    firmwareVersion = tkinter.StringVar()
+    firmwareVersion.set(dsiVersions[0])
+    downloadtwlmenu = tkinter.IntVar(value=1)
+    downloaddumptool = tkinter.IntVar(value=1)
+    unlaunch = tkinter.IntVar(value=0)
+    godmode9i = tkinter.IntVar(value=0)
+    updateHiyaCFW = tkinter.IntVar(value=0)
 
-#Fonts
-titleFont = tkinter.font.Font( 
-    family= "Segoe UI",
-    size= 15,
-    weight= "bold"
+    #Fonts
+    titleFont = tkinter.font.Font( 
+        family= "Segoe UI",
+        size= 15,
+        weight= "bold"
+        )
+    subtitleFont = tkinter.font.Font(
+        family= "Segoe UI",
+        size= 11,
+        slant= "italic"
     )
-subtitleFont = tkinter.font.Font(
-    family= "Segoe UI",
-    size= 11,
-    slant= "italic"
-)
-    
-bodyFont = tkinter.font.Font(
-    family= "Segoe UI",
-    underline= False,
-    size = 11
+        
+    bodyFont = tkinter.font.Font(
+        family= "Segoe UI",
+        underline= False,
+        size = 11
+        )
+    buttonFont = tkinter.font.Font(
+        family="Segoe UI",
+        underline=False,
+        size = 11,
+        weight = "bold"
     )
-buttonFont = tkinter.font.Font(
-    family="Segoe UI",
-    underline=False,
-    size = 11,
-    weight = "bold"
-)
 
-bigListFont = tkinter.font.Font(
-    family="Segoe UI",
-    underline=False,
-    size=9
-)
+    bigListFont = tkinter.font.Font(
+        family="Segoe UI",
+        underline=False,
+        size=9
+    )
 
-paragraphFont = tkinter.font.Font(
-    family="Segoe UI",
-    size=10
-)
+    paragraphFont = tkinter.font.Font(
+        family="Segoe UI",
+        size=10
+    )
 
-if platform.system() == "Darwin":    #Why is macOS so difficult...
-    backgroundColour = "#f0f0f0"     #How dull and boring
-    foregroundColour = "black"    
-    buttonColour = "#f0f0f0"
-    backButtonColour = "#f0f0f0"
-    nextButtonColour = "#f0f0f0"
-else: #Non Jeve Stobs worshippers
-    backgroundColour = "#252a34"
-    foregroundColour = "white"
-    buttonColour = "#7289DA"
-    backButtonColour = "#567487"
-    nextButtonColour = "#027b76"
+    if platform.system() == "Darwin":    #Why is macOS so difficult...
+        from tkmacosx import Button
+        backgroundColour = "#f0f0f0"     #How dull and boring
+        foregroundColour = "black"    
+        buttonColour = "#f0f0f0"
+        backButtonColour = "#f0f0f0"
+        nextButtonColour = "#f0f0f0"
 
 
-summonWindow0()
-root.mainloop()
+    else: #Non Jeve Stobs worshippers
+        from tkinter import Button
+        backgroundColour = "#252a34"
+        foregroundColour = "white"
+        buttonColour = "#7289DA"
+        backButtonColour = "#567487"
+        nextButtonColour = "#027b76"
+
+    summonWindow0()
+    root.mainloop()
