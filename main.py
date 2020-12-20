@@ -467,6 +467,10 @@ def summonWindow1():
     selector["menu"].config(bg=buttonColour,fg=foregroundColour,font=(buttonFont))
     selector.grid(column=0,row=5,sticky="w")
 
+    if platform.system() == "Darwin":
+        macOS_hiddentext = tkinter.Label(topFrame, text = "(Click the area above this text\n if you can't see the drop down menu) ",fg=foregroundColour,font=(bodyFont))
+        macOS_hiddentext.grid(column=0,row=6, sticky="w")
+
     backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow0()], width=button_width)
     backButton.pack(side=tkinter.LEFT)
     nextButton = Button(bottomFrame, text="Next",width=button_width, fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow2()])
@@ -593,6 +597,8 @@ if __name__ == "__main__":
             print("This program will ONLY work on Python 3 and above")
             sys.exit()
 
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+
     root = tkinter.Tk()
     window = tkinter.Toplevel(root)
     root.withdraw()
@@ -607,7 +613,7 @@ if __name__ == "__main__":
     #TKinter Vars
     downloadmemorypit = tkinter.IntVar(value=1)
     firmwareVersion = tkinter.StringVar()
-    firmwareVersion.set(dsiVersions[0])
+    firmwareVersion.set(dsiVersions[1])
     downloadtwlmenu = tkinter.IntVar(value=1)
     downloaddumptool = tkinter.IntVar(value=1)
     unlaunch = tkinter.IntVar(value=0)
@@ -661,7 +667,7 @@ if __name__ == "__main__":
 
 
     else: #Non Jeve Stobs worshippers
-        from tkinter import Button
+        from tkmacosx import Button
         backgroundColour = "#252a34"
         foregroundColour = "white"
         buttonColour = "#7289DA"
