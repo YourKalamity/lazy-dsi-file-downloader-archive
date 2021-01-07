@@ -667,7 +667,7 @@ if __name__ == "__main__":
 
 
     else: #Non Jeve Stobs worshippers
-        from tkmacosx import Button
+        from tkinter import Button
         backgroundColour = "#252a34"
         foregroundColour = "white"
         buttonColour = "#7289DA"
