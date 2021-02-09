@@ -43,7 +43,8 @@ def downloadFile(link, destination):
         downloadLocation = destination + fileName
         open(downloadLocation, 'wb').write(r.content)
         return downloadLocation
-    except ConnectionError:
+    except ConnectionError as e:
+        print(e)
         print("File not available, skipping...")
         return None
     
@@ -243,14 +244,13 @@ def start():
 
     if unlaunchNeeded == 1 :
         #Download Unlaunch
-        url = "https://problemkaputt.de/unlaunch.zip"
+        url = "https://web.archive.org/web/20210207235625if_/https://problemkaputt.de/unlaunch.zip"
         outputbox("Downloading Unlaunch\n")
         unlaunchLocation = downloadFile(url, cwdtemp)
         if unlaunchLocation != None:
             print("Unlaunch Downloaded")
             outputbox("Unlaunch Downloaded\n")
             lineCounter = lineCounter + 1
-
             #Extract Unlaunch
             unzipper(unlaunchLocation,directory)
 
