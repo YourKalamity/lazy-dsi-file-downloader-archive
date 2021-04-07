@@ -351,7 +351,7 @@ def start():
 
         
 def chooseDir(source,SDentry):
-    source.sourceFolder =  filedialog.askdirectory(parent=source, initialdir= "/", title='Please select the directory of your SD card')
+    source.sourceFolder =  filedialog.askdirectory(parent=source, initialdir= "/", title='Please select the root directory of your SD card')
     SDentry.delete(0, tkinter.END)
     SDentry.insert(0, source.sourceFolder)
 
