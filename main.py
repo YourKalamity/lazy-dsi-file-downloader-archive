@@ -21,6 +21,7 @@ import distutils
 import webbrowser
 import threading
 import hashlib
+from distutils import dir_util
 
 pageNumber = 0
 
@@ -249,7 +250,7 @@ def start():
             outputbox("Unlaunch Downloaded\n")
             lineCounter = lineCounter + 1
             # Extract Unlaunch
-            unzipper(unlaunchLocation, irectory)
+            unzipper(unlaunchLocation, directory)
             print("Unlaunch Extracted")
 
     # Creates roms/nds if it does not exist
