@@ -5,7 +5,7 @@
 
 
 import tkinter
-from tkinter import filedialog
+import tkinter.filedialog
 import tkinter.font
 import tkinter.ttk
 import os
@@ -88,13 +88,12 @@ def validateDirectory(directory):
             file.close()
         os.remove(string)
     except FileNotFoundError:
-        outputbox("That's not a valid directory")
-        outputbox("or you do not have the")
-        outputbox(" permission to write there")
+        outputbox("That's not a valid directory or you do not have the\n")
+        outputbox("permissions needed to write there\n")
         outputbox("Press the Back button to change the folder\n")
         return False
     except PermissionError:
-        outputbox("You do not have write access  to that folder\n")
+        outputbox("You do not have write access to that folder\n")
         outputbox("Press the Back button to change the folder\n")
         return False
     else:
@@ -221,7 +220,7 @@ def start():
             comparedHash = hashcreator(directory+"/BOOT.NDS")
             if originalHash == comparedHash:
                 print("TWiLight  Menu ++ placed in", directory)
-                outputbox("TWiLight Menu ++ placed on SD \n")
+                outputbox("TWiLight Menu ++ placed on SD card\n")
         # Download DeadSkullzJr's Cheat Database
         Path(directory + "/_nds/TWiLightMenu/extras/").mkdir(parents=True, exist_ok=True)
         outputbox("Downloading DeadSkullzJr's Cheat database\n")
@@ -336,7 +335,7 @@ def start():
 
 
 def chooseDir(source, SDentry):
-    source.sourceFolder = filedialog.askdirectory(
+    source.sourceFolder = tkinter.filedialog.askdirectory(
         parent=source, initialdir="/",
         title='Please select the root directory of your SD card')
     SDentry.delete(0, tkinter.END)
@@ -408,15 +407,16 @@ def summonWindow0():
     first = tkinter.Label(topFrame, text="Lazy DSi File Downloader", font=(titleFont), fg=foregroundColour)
     first.grid(column=0, row=0, sticky="w", padx=5)
     bulletpoints = [
-        "This is an application made by Your Kalamity that downloads and place files for homebrew'ing your Nintendo DSi in the correct location. If you have already installed homebrew, this can also update the one you have.",
+        "This program will download all files necessary to run homebrew on your Nintendo DSi.",
         "This is to be used in conjunction with the Nintendo DSi Modding guide by NightScript, emiyl and the rest of the community.",
         "Check it out here: https://dsi.cfw.guide/",
         "By using this application, you don't need to follow any of the 'Preparing SD card' steps.",
+        "If you need help, join the Discord server with the button below.",
         "Please proceed by hitting the 'Next' button"
         ]
 
     for count, x in enumerate(bulletpoints):
-        bullet = tkinter.Label(topFrame, text=x, font=(paragraphFont), fg=foregroundColour, wraplength=450, justify="left")
+        bullet = tkinter.Label(topFrame, text="• "+x, font=(paragraphFont), fg=foregroundColour, wraplength=500, justify="left")
         bullet.grid(column=0, row=count+3, sticky="w", padx=5)
     
     discordButton = Button(bottomFrame, text="DS⁽ⁱ⁾ Mode Hacking Discord server", fg=foregroundColour, bg=buttonColour, font=(buttonFont), command=lambda: webbrowser.open("https://discord.gg/yD3spjv", new=1))
@@ -483,7 +483,7 @@ def summonWindow2():
     GodMode9iCheck.grid(column=0,row=6,sticky="w")
     updateHiyaCheck = tkinter.Checkbutton(topFrame, text = "Update hiyaCFW? (must have run hiyaHelper once before)", variable =updateHiyaCFW, fg=foregroundColour,font=(buttonFont))
     updateHiyaCheck.grid(column=0,row=7,sticky="w")
-    buttonExtraHomebrew = tkinter.Button(topFrame, text = "Additional homebrew...", command =lambda:[extraHomebrew(window)], fg=foregroundColour,font=(buttonFont),bg=buttonColour)
+    buttonExtraHomebrew = tkinter.Button(topFrame, text = "Click to add Additional homebrew...", command =lambda:[extraHomebrew(window)], fg=foregroundColour,font=(buttonFont),bg=buttonColour)
     buttonExtraHomebrew.grid(column=0,row=8,sticky="w",pady=5)
     backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow1()], width=button_width)
     backButton.pack(side=tkinter.LEFT)
@@ -503,9 +503,9 @@ def summonWindow3():
     first.grid(column=0,row=0, sticky="w")
     subtitle = tkinter.Label(topFrame, text='ready to download?', font=(subtitleFont), fg=foregroundColour)
     subtitle.grid(column=0,row=1,sticky="w")
-    noticeLabel=tkinter.Label(topFrame,text="Plug in your SD card and choose the directory", fg=foregroundColour, font=(bodyFont))
+    noticeLabel=tkinter.Label(topFrame,text="Plug in your SD card and select the root directory :", fg=foregroundColour, font=(buttonFont))
     noticeLabel.grid(column=0,row=2,sticky="w")
-    SDentry = tkinter.Entry(topFrame, fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=25)
+    SDentry = tkinter.Entry(topFrame, fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=35)
     SDentry.grid(column=0, row=3,sticky="w")
     chooseDirButton = Button(topFrame, text = "Click to select folder", command =lambda:chooseDir(topFrame,SDentry),fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=folder_width)
     chooseDirButton.grid(column=0, row=4,sticky="w",pady=5)
@@ -562,7 +562,7 @@ def summonWindow5():
     labellink.bind("<Button-1>", lambda e: webbrowser.open_new("https://dsi.cfw.guide/"))
     label= tkinter.Label(topFrame,text="Credits to",font=(bodyFont),fg=foregroundColour)
     label.grid(column=0,row=4,sticky="w")
-    bulletpoints = ["YourKalamity - Creator","NightScript - Idea & writer of dsi.cfw.guide","Emiyl - Writer of dsi.cfw.guide","SNBeast - Testing and pointing out errors","Everybody that helped create the homebrew downloaded by this app","Kaisaan - Yes"]
+    bulletpoints = ["YourKalamity - Creator","NightScript - Idea & Writer of dsi.cfw.guide","Emiyl - Writer of dsi.cfw.guide","SNBeast - Testing and pointing out errors","Everybody that helped create the homebrew downloaded by this app","Kaisaan - Yes"]
     w = 5
     for x in bulletpoints:
         label = tkinter.Label(topFrame,text=x,font=(bigListFont),fg=foregroundColour)
@@ -630,7 +630,7 @@ if __name__ == "__main__":
     )
     paragraphFont = tkinter.font.Font(
         family="Segoe UI",
-        size=10
+        size=12
     )
 
     if platform.system() == "Darwin":
@@ -641,7 +641,7 @@ if __name__ == "__main__":
         backButtonColour = "#f0f0f0"
         nextButtonColour = "#f0f0f0"
         button_width = 80
-        folder_width = 250
+        folder_width = 350
     else:
         from tkinter import Button
         backgroundColour = "#252a34"
@@ -650,7 +650,7 @@ if __name__ == "__main__":
         backButtonColour = "#567487"
         nextButtonColour = "#027b76"
         button_width = 8
-        folder_width = 25
+        folder_width = 35
 
     summonWindow0()
     root.mainloop()
