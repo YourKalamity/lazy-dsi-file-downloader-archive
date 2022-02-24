@@ -1,29 +1,19 @@
-#!/usr/bin/env python3
-
-# Created by YourKalamity
-# https://github.com/YourKalamity/lazy-dsi-file-downloader
-
-
-import tkinter
-import tkinter.filedialog
-import tkinter.font
-import tkinter.ttk
-import os
-import platform
 import sys
+from typing import Type
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtUiTools import QUiLoader
+import resources
 import requests
 import json
-from pathlib import Path
-import shutil
+import os
+import platform
 from subprocess import Popen
-import zipfile
 import distutils
-import webbrowser
-import threading
-import hashlib
 from distutils import dir_util
-
-pageNumber = 0
+import shutil
+from pathlib import Path
+import zipfile
+import threading
 
 dsiVersions = [
     "1.0 - 1.3 (USA, EUR, AUS, JPN)",
@@ -39,6 +29,12 @@ memoryPitLinks = [
 ]
 
 
+def current_operation_output(widget, message):
+    widget.current_operation.setText(message)
+    print(message)
+    return
+
+
 def downloadFile(link, destination):
     try:
         r = requests.get(link, allow_redirects=True)
@@ -49,15 +45,9 @@ def downloadFile(link, destination):
         downloadLocation = destination + fileName
         open(downloadLocation, 'wb').write(r.content)
         return downloadLocation
-    except requests.exceptions.ConnectionError as e:
-        print(e)
-        print("File not available, skipping...")
+    except requests.exceptions.ConnectionError:
+        current_operation_output(widget, "File not available, skipping...")
         return None
-
-
-def hashcreator(filetobechecked):
-    string = hashlib.blake2b(open(filetobechecked, 'rb').read()).hexdigest()
-    return string
 
 
 def getLatestGitHub(usernamerepo, assetNumber):
@@ -67,38 +57,6 @@ def getLatestGitHub(usernamerepo, assetNumber):
         ).content)
     url = release["assets"][assetNumber]["browser_download_url"]
     return url
-
-
-def outputbox(message):
-    outputBox.configure(state='normal')
-    outputBox.insert('end', message)
-    outputBox.see(tkinter.END)
-    outputBox.configure(state='disabled')
-
-
-def validateDirectory(directory):
-    try:
-        directory = str(directory)
-    except TypeError:
-        outputbox("That's not a valid directory \n")
-        outputbox("Press the Back button to change the folder\n")
-        return False
-    try:
-        string = directory + "/test.file"
-        with open(string, 'w') as file:
-            file.close()
-        os.remove(string)
-    except FileNotFoundError:
-        outputbox("That's not a valid directory or you do not have the\n")
-        outputbox("permissions needed to write there\n")
-        outputbox("Press the Back button to change the folder\n")
-        return False
-    except PermissionError:
-        outputbox("You do not have write access to that folder\n")
-        outputbox("Press the Back button to change the folder\n")
-        return False
-    else:
-        return True
 
 
 def unzipper(unzipped, destination):
@@ -112,13 +70,84 @@ def un7zipper(_7za, zipfile, destination):
     un7zipper.wait()
 
 
-def start():
-    # Clear outputBox
-    outputBox.configure(state='normal')
-    outputBox.delete('1.0', tkinter.END)
-    outputBox.configure(state='disabled')
+def validate_directory(directory):
+    try:
+        directory = str(directory)
+        string = directory + "/test.file"
+        with open(string, 'w') as file:
+            file.close()
+        os.remove(string)
+    except TypeError or FileNotFoundError:
+        current_operation_output(widget, "That's not a valid directory!")
+        return False
+    except PermissionError:
+        current_operation_output(widget, "You don't have permission to access that directory!")
+        return False
+    return True
 
-    # Locate 7z binary
+
+def get_root(path):
+    if os.name == 'nt':
+        path = path[:3]
+        path = path.replace('\\', '/')
+    else:
+        temp = path
+        orig_dev = os.stat(temp).st_dev
+        while temp != '/':
+            direc = os.path.dirname(temp)
+            if os.stat(direc).st_dev != orig_dev:
+                break
+            temp = direc
+        path = temp
+    return path
+
+
+def change_locked_state(widget, state):
+    if state == "locked":
+        for tab in range(0, widget.tabWidget.count() - 1):
+            widget.tabWidget.setTabEnabled(tab, False)
+        widget.previous_page3.setEnabled(False)
+        widget.Finish.setEnabled(False)
+    elif state == "unlocked":
+        for tab in range(0, widget.tabWidget.count()):
+            widget.tabWidget.setTabEnabled(tab, True)
+        widget.previous_page3.setEnabled(True)
+        widget.Finish.setEnabled(False)
+    elif state == "finished":
+        widget.Finish.setEnabled(True)
+
+def get_num_steps(widget):
+    steps = 2
+    if widget.MemoryPitCheckBox.isChecked():
+        steps += 1
+    if widget.TWLMenuCheckBox.isChecked():
+        steps += 1
+    if widget.dumpToolCheckBox.isChecked():
+        steps += 1
+    if widget.UnlaunchCheckBox.isChecked():
+        steps += 1
+    if widget.GodMode9iCheckBox.isChecked():
+        steps += 1
+    if widget.hiyaCheckBox.isChecked():
+        steps += 1
+    for count, item in enumerate(homebrewDB):
+        if homebrewlist[count].isChecked():
+            steps += 1
+    return steps
+
+
+def update_step_count(widget, steps, original_steps):
+    widget.step_counter.setText("Step " + str(steps) + " of " + str(original_steps))
+
+
+def start(widget):
+    original_steps = get_num_steps(widget)
+    steps = 0
+    update_step_count(widget, steps, original_steps)
+    widget.tabWidget.setTabEnabled(5, True)
+    change_page(widget, "forward")
+    change_locked_state(widget, "locked")
+    current_operation_output(widget, "Searching for 7-Zip...")
     sysname = platform.system()
     _7za = os.path.join(sysname, '7za')
     _7z = None
@@ -129,7 +158,7 @@ def start():
     if sysname == "Windows":
         # Search for 7z in the 64-bit Windows Registry
         import winreg
-        print('Searching for 7-Zip in the Windows registry...')
+        current_operation_output(widget, 'Searching for 7-Zip in the Windows registry...')
         try:
             with winreg.OpenKey(
                 winreg.HKEY_LOCAL_MACHINE,
@@ -143,7 +172,7 @@ def start():
                 _7za = _7z
         except WindowsError:
             # Search for 7z in the 32-bit Windows Registry
-            print('Searching for 7-Zip in the 32-bit Windows registry...')
+            current_operation_output(widget, 'Searching for 7-Zip in the 32-bit Windows registry...')
 
             try:
                 with winreg.OpenKey(
@@ -153,505 +182,239 @@ def start():
 
                     if not os.path.exists(_7z):
                         raise WindowsError
-
                     _7za = _7z
             except WindowsError:
-                print("7-Zip not found, please install it before using")
-                outputbox("7-Zip not found \n")
-                finalbackButton.configure(state='normal')
+                current_operation_output(widget, "7-Zip not found, please install it before using")
+                change_locked_state(widget, "unlocked")
                 return
-    print("7-Zip found!")
+    steps += 1
+    update_step_count(widget, steps, original_steps)
+    current_operation_output(widget, "7-Zip found!")
 
-    lineCounter = 0
-    directory = SDentry
-    if directory.endswith("\\") or directory.endswith("/"):
-        directory = directory[:-1]
-    version = firmwareVersion.get()
-    unlaunchNeeded = unlaunch.get()
-
-    # Validate directory
-    directoryValidated = validateDirectory(directory)
-    if directoryValidated is False:
-        finalbackButton.configure(state='normal')
+    current_operation_output(widget, "Checking SD Directory...")
+    if not validate_directory(widget.SDDirectoryInput.text()):
+        change_locked_state(widget, "unlocked")
         return
-    if dsiVersions.index(version) == 1:
-        memoryPitDownload = memoryPitLinks[1]
-    elif dsiVersions.index(version) in [0, 2]:
-        memoryPitDownload = memoryPitLinks[0]
 
-    # Creates a path called "/lazy-dsi-file-downloader-tmp/"
-    cwdtemp = os.getcwd() + "/lazy-dsi-file-downloader-tmp/"
-    Path(cwdtemp).mkdir(parents=True, exist_ok=True)
+    cwd_temp = os.getcwd() + "/lazy-dsi-file-downloader-tmp/"
+    try:
+        Path(cwd_temp).mkdir(parents=True, exist_ok=True)
+    except FileExistsError:
+        pass
+    except PermissionError:
+        current_operation_output(widget, "Please run this program from a different location")
+        change_locked_state(widget, "unlocked")
+        return
 
-    if downloadmemorypit.get() == 1:
-        # Download Memory Pit
-        memoryPitLocation = directory + "/private/ds/app/484E494A/"
+    current_operation_output(widget, "Finding SD root...")
+    sd_path = get_root(widget.SDDirectoryInput.text())
+    current_operation_output(widget, "SD root found!")
+
+    steps += 1
+    update_step_count(widget, steps, original_steps)
+
+    if widget.MemoryPitCheckBox.isChecked():
+        current_operation_output(widget, "Downloading Memory Pit...")
+        if widget.fwComboBox.currentIndex() == 1:
+            memoryPitDownload = memoryPitLinks[1]
+        else:
+            memoryPitDownload = memoryPitLinks[0]
+        memoryPitLocation = sd_path + "/private/ds/app/484E494A/"
         Path(memoryPitLocation).mkdir(parents=True, exist_ok=True)
-        outputbox("Downloading Memory Pit\n")
         downloadLocation = downloadFile(memoryPitDownload, memoryPitLocation)
         if downloadLocation is not None:
-            outputbox("Memory Pit Downloaded\n")
-            print("Memory Pit Downloaded")
-
-    if downloadtwlmenu.get() == 1:
-        # Download TWiLight Menu
-        outputbox("Downloading TWiLight Menu ++\n")
-        TWLmenuLocation = downloadFile(getLatestGitHub('DS-Homebrew/TWiLightMenu', 1), cwdtemp)
+            current_operation_output(widget, "Memory Pit downloaded!")
+        steps += 1
+        update_step_count(widget, steps, original_steps)
+    
+    if widget.TWLMenuCheckBox.isChecked():
+        current_operation_output(widget, "Downloading TWiLight Menu ++...")
+        TWLmenuLocation = downloadFile(getLatestGitHub('DS-Homebrew/TWiLightMenu', 1), cwd_temp)
         if TWLmenuLocation is not None:
-            outputbox("TWiLight Menu ++ Downloaded\n")
-            print("TWiLight Menu ++ Downloaded")
+            current_operation_output(widget, "TWiLight Menu ++ downloaded!")
+            current_operation_output(widget, "Extracting...")
+            proc = Popen([_7za,"x", "-aoa", TWLmenuLocation, '-o'+cwd_temp, '_nds', 'hiya', 'roms','title', 'BOOT.NDS','snemul.cfg'])
+            proc.wait()
+            current_operation_output(widget, "TWiLight Menu ++ extracted!")
+            
+            current_operation_output(widget, "Copying TWiLight Menu ++...")
+            shutil.copy(cwd_temp + "BOOT.NDS", sd_path)
+            distutils.dir_util.copy_tree(cwd_temp + "_nds/", sd_path + "/_nds/")
+            distutils.dir_util.copy_tree(cwd_temp + "hiya", sd_path + "/hiya/")
+            distutils.dir_util.copy_tree(cwd_temp + "title", sd_path + "/title/")
+            distutils.dir_util.copy_tree(cwd_temp + "roms", sd_path + "/roms/")
+            shutil.rmtree(cwd_temp+"_nds/")
+            Path(cwd_temp + "_nds/").mkdir(parents=True, exist_ok=True)
+            current_operation_output(widget, "TWiLight Menu ++ copied!")
 
-            # Extract TWiLight Menu
-            proc = Popen([_7za,"x", "-aoa", TWLmenuLocation, '-o'+cwdtemp, '_nds', 'hiya', 'roms','title', 'BOOT.NDS','snemul.cfg'])
-            ret_val = proc.wait()
-            outputbox("TWiLight Menu ++ Extracted\n")
-            print("TWiLight Menu ++ Extracted to", cwdtemp)
-            originalHash = hashcreator(cwdtemp + "BOOT.NDS")
+            Path(sd_path + "/_nds/TWiLightMenu/extras/").mkdir(parents=True, exist_ok=True)
+            current_operation_output(widget, "Downloading DeadSkullzJr's Cheat Database")
+            downloadLocation = downloadFile('https://bitbucket.org/DeadSkullzJr/nds-cheat-databases/raw/933c375545d3ff90854d1e210dcf4b3b31d9d585/Cheats/usrcheat.dat', sd_path + "/_nds/TWiLightMenu/extras/")
+            if downloadLocation is not None:
+                current_operation_output(widget, "DeadSkullzJr's Cheat Database downloaded!")
+            steps += 1
+            update_step_count(widget, steps, original_steps)
 
-            # Move TWiLight Menu
-            shutil.copy(cwdtemp + "BOOT.NDS", directory)
-            distutils.dir_util.copy_tree(cwdtemp + "_nds/", directory + "/_nds/")
-            distutils.dir_util.copy_tree(cwdtemp + "hiya", directory + "/hiya/")
-            distutils.dir_util.copy_tree(cwdtemp + "title", directory + "/title/")
-            distutils.dir_util.copy_tree(cwdtemp + "roms", directory + "/roms/")
-
-            # Some Homebrew write to the _nds folder so it is better to clear it first
-            shutil.rmtree(cwdtemp +"_nds/")
-            Path(cwdtemp + "_nds/").mkdir(parents=True, exist_ok=True)
-            comparedHash = hashcreator(directory+"/BOOT.NDS")
-            if originalHash == comparedHash:
-                print("TWiLight  Menu ++ placed in", directory)
-                outputbox("TWiLight Menu ++ placed on SD card\n")
-        # Download DeadSkullzJr's Cheat Database
-        Path(directory + "/_nds/TWiLightMenu/extras/").mkdir(parents=True, exist_ok=True)
-        outputbox("Downloading DeadSkullzJr's Cheat database\n")
-        downloadLocation = downloadFile('https://bitbucket.org/DeadSkullzJr/nds-cheat-databases/raw/933c375545d3ff90854d1e210dcf4b3b31d9d585/Cheats/usrcheat.dat', directory + "/_nds/TWiLightMenu/extras/")
+    if widget.dumpToolCheckBox.isChecked():
+        current_operation_output(widget, "Downloading dumpTool...")
+        downloadLocation = downloadFile(getLatestGitHub('zoogie/dumpTool', 0), sd_path)
         if downloadLocation is not None:
-            print("DeadSkullzJr's Cheat Database downloaded")
-            outputbox("DeadSkullzJr's Cheat Database downloaded\n")
-
-    if downloaddumptool.get() == 1:
-        # Download dumpTool
-        outputbox("Downloading dumpTool\n")
-        downloadLocation = downloadFile(getLatestGitHub('zoogie/dumpTool', 0), directory)
-        if downloadLocation is not None:
-            print("dumpTool downloaded")
-            outputbox("dumpTool Downloaded\n")
-            lineCounter = lineCounter + 1
-
-    if unlaunchNeeded == 1:
-        # Download Unlaunch
+            current_operation_output(widget, "dumpTool downloaded!")
+        steps += 1
+        update_step_count(widget, steps, original_steps)
+    
+    if widget.UnlaunchCheckBox.isChecked():
         url = "https://web.archive.org/web/20210207235625if_/https://problemkaputt.de/unlaunch.zip"
-        outputbox("Downloading Unlaunch\n")
-        unlaunchLocation = downloadFile(url, cwdtemp)
+        current_operation_output(widget, "Downloading Unlaunch...")
+        unlaunchLocation = downloadFile(url, cwd_temp)
         if unlaunchLocation is not None:
-            print("Unlaunch Downloaded")
-            outputbox("Unlaunch Downloaded\n")
-            lineCounter = lineCounter + 1
-            # Extract Unlaunch
-            unzipper(unlaunchLocation, directory)
-            print("Unlaunch Extracted")
+            current_operation_output(widget, "Unlaunch downloaded!")
+            current_operation_output(widget, "Extracting...")
+            unzipper(unlaunchLocation, sd_path)
+            current_operation_output(widget, "Unlaunch extracted!")
+        steps += 1
+        update_step_count(widget, steps, original_steps)
 
-    # Creates roms/nds if it does not exist
-    roms = directory + "/roms/nds/"
+    roms = sd_path + "/roms/nds/"
     Path(roms).mkdir(parents=True, exist_ok=True)
 
-    if godmode9i.get() == 1:
-        # Download GodMode9i
-        outputbox("Downloading GodMode9i\n")
-        downloadLocation = downloadFile(getLatestGitHub('DS-Homebrew/GodMode9i', 0), cwdtemp)
+    if widget.GodMode9iCheckBox.isChecked():
+        current_operation_output(widget, "Downloading GodMode9i...")
+        downloadLocation = downloadFile(getLatestGitHub('DS-Homebrew/GodMode9i', 0), cwd_temp)
         if downloadLocation is not None:
-            print("GodMode9i downloaded")
-            outputbox("GodMode9i Downloaded\n")
-            lineCounter = lineCounter + 1
-            # Extract TWiLight Menu
+            current_operation_output(widget, "GodMode9i downloaded!")
+            current_operation_output(widget, "Extracting...")
             proc = Popen([_7za,"x", "-aoa", downloadLocation, '-o'+roms, 'GodMode9i.nds'])
-            ret_val = proc.wait()
-            outputbox("GodMode9i Extracted\n")
-            print("GodMode9i Extracted to", roms)
+            proc.wait()
+            current_operation_output(widget, "GodMode9i extracted!")
+        steps += 1
+        update_step_count(widget, steps, original_steps)
 
-    if updateHiyaCFW.get() == 1:
-        # Check if old hiyaCFW insallation exists
-        outputbox("Checking for hiyaCFW\n")
-        if os.path.isfile(directory+"/hiya.dsi"):
-            outputbox("hiyaCFW found...\n")
-            outputbox("Downloading latest...\n")
-            downloadLocation = downloadFile(getLatestGitHub("RocketRobz/hiyaCFW", 0), cwdtemp)
+    if widget.hiyaCheckBox.isChecked():
+        current_operation_output(widget, "Checking for hiyaCFW...")
+        if os.path.exists(sd_path + "/hiya.dsi"):
+            current_operation_output(widget, "hiyaCFW found!")
+            current_operation_output(widget, "Downloading latest hiyaCFW...")
+            downloadLocation = downloadFile(getLatestGitHub("RocketRobz/hiyaCFW", 0), cwd_temp)
             if downloadLocation is not None:
-                outputbox("hiyaCFW.7z downloaded\n")
-                os.remove(directory+"/hiya.dsi")
-                proc = Popen([_7za,"x","-aoa",downloadLocation, "-o"+directory,"for SDNAND SD card\hiya.dsi"])
-                ret_val = proc.wait()
-                shutil.move(directory + "/for SDNAND SD card/hiya.dsi", directory + "/hiya.dsi")
-                shutil.rmtree(directory + "/for SDNAND SD card/")
+                current_operation_output(widget, "hiyaCFW downloaded!")
+                os.remove(sd_path+"/hiya.dsi")
+                current_operation_output(widget, "Extracting...")
+                proc = Popen([_7za,"x","-aoa",downloadLocation, "-o" + sd_path ,"for SDNAND SD card\hiya.dsi"])
+                proc.wait()
+                shutil.move(sd_path + "/for SDNAND SD card/hiya.dsi", sd_path + "/hiya.dsi")
+                shutil.rmtree(sd_path + "/for SDNAND SD card/")
+                current_operation_output(widget, "hiyaCFW extracted!")
         else:
-            outputbox("hiya.dsi was not found\n")
-            outputbox("Please run the hiyaCFW helper first")
+            current_operation_output(widget, "hiyaCFW not found!")
+            current_operation_output(widget, "Please run hiyaCFW helper first!")
+        steps += 1
+        update_step_count(widget, steps, original_steps)
 
-    # Download and extract extra homebrew
-    outputbox("Downloading other homebrew\n")
-    lineCounter = lineCounter + 1
-    print("Downloading other homebrew...")
-
+    current_operation_output(widget, "Downloading Extra Homebrew...")
     for count, item in enumerate(homebrewDB):
-        if homebrewList[count].get() == 1:
-            print("Downloading "+item["title"])
-            outputbox("Downloading "+item["title"]+'\n')
-            lineCounter = lineCounter + 1
+        if homebrewlist[count].isChecked():
+            current_operation_output(widget, "Downloading " + item["title"] + "...")
             if item["github"] == "True":
                 downloadlink = getLatestGitHub(item["repo"], int(item["asset"]))
             else:
                 downloadlink = item["link"]
             if item["extension"] == "nds":
                 downloadFile(downloadlink, roms)
-                outputbox("Downloaded "+item["title"]+'\n')
+                current_operation_output(widget, "Downloaded " + item["title"] + "!")
             elif item["extension"] == "zip":
-                downloadLocation = downloadFile(downloadlink, cwdtemp)
+                downloadLocation = downloadFile(downloadlink, cwd_temp)
                 if downloadLocation is not None:
-                    if item["location"]["roms"] == "all":
-                        unzipper(downloadLocation, roms)
-                        outputbox("Downloaded "+item["title"]+'\n')
+                    current_operation_output(widget, "Downloaded " + item["title"] + "!")
+                    current_operation_output(widget, "Extracting...")
+                    unzipper(downloadLocation, roms)
+                    current_operation_output(widget, "Extracted " + item["title"] + "!")
             elif item["extension"] == "7z":
-                downloadLocation = downloadFile(downloadlink, cwdtemp)
+                downloadLocation = downloadFile(downloadlink, cwd_temp)
                 if downloadLocation is not None:
+                    current_operation_output(widget, "Downloaded " + item["title"] + "!")
                     if item["location"]["roms"] == "all":
                         un7zipper(_7za, downloadLocation, roms)
-                        outputbox("Downloaded "+item["title"]+'\n')
+                        current_operation_output(widget, "Extracted " + item["title"] + "!")
                     else:
-                        un7zipper(_7za, downloadLocation, cwdtemp)
+                        un7zipper(_7za, downloadLocation, roms + cwd_temp)
+                        current_operation_output(widget, "Extracted " + item["title"] + "!")
                         if "root" in item["location"]:
-                            Path(directory+(item["location"]["root"].split('/')).pop()).mkdir(parents=True, exist_ok=True)
-                            shutil.copy(cwdtemp+item["location"]["root"], directory+((item["location"]["root"].split('/')).pop().pop(0)))
+                            Path(sd_path+(item["location"]["root"].split('/')).pop()).mkdir(parents=True, exist_ok=True)
+                            shutil.copy(cwd_temp+item["location"]["root"], sd_path+((item["location"]["root"].split('/')).pop().pop(0)))
                         if "roms" in item["location"]:
-                            shutil.copy(cwdtemp+item["location"]["roms"], roms)
-                        outputbox("Downloaded "+item["title"]+'\n')
-    # Delete tmp folder
-    shutil.rmtree(cwdtemp)
-    # Restore button access
-    finalnextButton.config(state="normal")
-    window.protocol("WM_DELETE_WINDOW", lambda: closeButtonPress(window))
-    print("Done!")
-    outputbox("Done!\n")
-    outputbox("Press the Finish button to continue... \n")
+                            shutil.copy(cwd_temp+item["location"]["roms"], roms)
+                        current_operation_output(widget, "Copied " + item["title"] + "!")
+            steps += 1
+            update_step_count(widget, steps, original_steps)
+
+    shutil.rmtree(cwd_temp)
+    current_operation_output(widget, "Done! Press Finish to exit.")
+    change_locked_state(widget, "finished")
 
 
-def chooseDir(source, SDentry):
-    source.sourceFolder = tkinter.filedialog.askdirectory(
-        parent=source, initialdir="/",
-        title='Please select the root directory of your SD card')
-    SDentry.delete(0, tkinter.END)
-    SDentry.insert(0, source.sourceFolder)
+def change_page(widget, direction):
+    if direction == "forward":
+        widget.tabWidget.setCurrentIndex(widget.tabWidget.currentIndex() + 1)
+    elif direction == "backward":
+        widget.tabWidget.setCurrentIndex(widget.tabWidget.currentIndex() - 1)
 
 
-def okButtonPress(self, source):
-    self.destroy()
-    source.deiconify()
+def start_thread(widget):
+    thread = threading.Thread(target=start, args=(widget,))
+    thread.start()
 
 
-def extraHomebrew(source):
-    homebrewWindow = tkinter.Toplevel(source)
-    homebrewWindow.config(bg="#f0f0f0")
-    source.withdraw()
-    homebrewWindowLabel = tkinter.Label(homebrewWindow, text="Homebrew List", font=("Segoe UI",12,"bold"), bg="#f0f0f0", fg="#000000")
-    homebrewWindowLabel.pack(anchor="w")
-    homebrewWindowLabel2 = tkinter.Label(homebrewWindow, text="Select additional homebrew for download then press OK", font=(bodyFont), bg="#f0f0f0", fg="#000000")
-    homebrewWindowLabel2.pack(anchor="w")
-    vscrollbar = tkinter.Scrollbar(homebrewWindow)
-    canvas = tkinter.Canvas(homebrewWindow, yscrollcommand=vscrollbar.set)
-    canvas.config(bg="#f0f0f0")
-    vscrollbar.config(command=canvas.yview)
-    vscrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
-    homebrewFrame = tkinter.Frame(canvas)
-    homebrewFrame.configure(bg="#f0f0f0")
-    homebrewWindow.title("Homebrew List")
-    homebrewWindow.resizable(0, 0)
-    canvas.pack(side="left", fill="both", expand=True)
-    canvas.create_window(0, 0, window=homebrewFrame, anchor="n")
-    for count, x in enumerate(homebrewDB):
-        homebrewListMenu = tkinter.Checkbutton(homebrewFrame, text=x["title"] + " by " + x["author"], font=(bigListFont), variable=homebrewList[count], bg="#f0f0f0", fg="#000000")
-        homebrewListMenu.config(selectcolor="#F0F0F0")
-        homebrewListMenu.pack(anchor = "w")
-    frame = tkinter.ttk.Frame(homebrewWindow, relief=tkinter.RAISED, borderwidth=1)
-    frame.pack(fill=tkinter.BOTH, expand=True)
-    okButton = Button(homebrewWindow, text = "OK", font=(buttonFont), command=lambda: okButtonPress(homebrewWindow,source), bg="#f0f0f0", fg="#000000")
-    okButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
-    homebrewWindow.update()
-    canvas.config(scrollregion=canvas.bbox("all"))
-    homebrewWindow.protocol("WM_DELETE_WINDOW", lambda: okButtonPress(homebrewWindow, source))
+def set_up(widget):
+    widget.next_page0.clicked.connect(lambda: change_page(widget, "forward"))
+    widget.next_page1.clicked.connect(lambda: change_page(widget, "forward"))
+    widget.next_page2.clicked.connect(lambda: change_page(widget, "forward"))
+    widget.StartButton.clicked.connect(lambda: start_thread(widget))
+    widget.next_page4.clicked.connect(lambda: change_page(widget, "forward"))
+    widget.previous_page0.clicked.connect(lambda: change_page(widget, "backward"))
+    widget.previous_page1.clicked.connect(lambda: change_page(widget, "backward"))
+    widget.previous_page2.clicked.connect(lambda: change_page(widget, "backward"))
+    widget.previous_page3.clicked.connect(lambda: change_page(widget, "backward"))
+    widget.previous_page4.clicked.connect(lambda: change_page(widget, "backward"))
+    widget.FileDialogOpenButton.clicked.connect(lambda: get_SD_path(widget))
+    widget.Finish.clicked.connect(lambda: sys.exit(app.exec()))
+    widget.tabWidget.setTabEnabled(5, False)
 
 
-def closeButtonPress(source):
-    source.destroy()
-    root.destroy()
+def add_item_to_additional_homebrew(widget, item):
+    checkbox = QtWidgets.QCheckBox(item)
+    checkbox.resize(checkbox.sizeHint())
+    widget.scrollAreaWidgetContents.layout().addWidget(checkbox)
+    checkbox.setMinimumHeight(30)
+    return checkbox
 
 
-def nextWindow(windownumbertosummon):
-    globals()["summonWindow"+windownumbertosummon]
+def add_homebrew_to_list(widget):
+    homebrewDB = json.loads(
+        requests.get(
+            'https://raw.githubusercontent.com/YourKalamity/just-a-dsi-DB/master/just-a-dsi-DB.json'
+            ).content)
+    homebrewList = []
+    for count, item in enumerate(homebrewDB):
+        homebrewList.append(
+            add_item_to_additional_homebrew(
+                widget, f"{item['title']} - {item['author']}"
+                ))
+    return homebrewList, homebrewDB
 
 
-def donothing():
-    return
-
-
-def summonWindow0():
-    window.title("Lazy DSi file Downloader")
-    window.resizable(0, 0)
-    window.geometry("500x360")
-    window.option_add("*Background", backgroundColour)
-    window.configure(bg=backgroundColour)
-    topFrame = tkinter.Frame(window)
-    topFrame.pack(expand=True, fill=tkinter.BOTH, padx=5)
-    topFrame.option_add("*Background", backgroundColour)
-    bottomFrame = tkinter.Frame(window)
-    bottomFrame.pack(side=tkinter.BOTTOM, fill=tkinter.X, padx=5)
-    bottomFrame.option_add("*Background", backgroundColour)
-    first = tkinter.Label(topFrame, text="Lazy DSi File Downloader", font=(titleFont), fg=foregroundColour)
-    first.grid(column=0, row=0, sticky="w", padx=5)
-    bulletpoints = [
-        "This program will download all files necessary to run homebrew on your Nintendo DSi.",
-        "This is to be used in conjunction with the Nintendo DSi Modding guide by NightScript, emiyl and the rest of the community.",
-        "Check it out here: https://dsi.cfw.guide/",
-        "By using this application, you don't need to follow any of the 'Preparing SD card' steps.",
-        "If you need help, join the Discord server with the button below.",
-        "Please proceed by hitting the 'Next' button"
-        ]
-
-    for count, x in enumerate(bulletpoints):
-        bullet = tkinter.Label(topFrame, text="• "+x, font=(paragraphFont), fg=foregroundColour, wraplength=500, justify="left")
-        bullet.grid(column=0, row=count+3, sticky="w", padx=5)
-    
-    discordButton = Button(bottomFrame, text="DS⁽ⁱ⁾ Mode Hacking Discord server", fg=foregroundColour, bg=buttonColour, font=(buttonFont), command=lambda: webbrowser.open("https://discord.gg/yD3spjv", new=1))
-    discordButton.pack(side=tkinter.LEFT, padx="5", pady="5")
-    nextButton = Button(bottomFrame, text="Next", width=button_width, fg=foregroundColour, bg=nextButtonColour, font=(buttonFont), command=lambda: [topFrame.destroy(), bottomFrame.destroy(), summonWindow1()])
-    nextButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
-
-    window.protocol("WM_DELETE_WINDOW", lambda: closeButtonPress(window))
-
-
-def summonWindow1():
-    topFrame = tkinter.Frame(window)
-    topFrame.pack(expand=True, fill=tkinter.BOTH, padx=5)
-    topFrame.option_add("*Background", backgroundColour)
-    bottomFrame = tkinter.Frame(window)
-    bottomFrame.pack(side=tkinter.BOTTOM, fill=tkinter.X, padx=5)
-    bottomFrame.option_add("*Background", backgroundColour)
-    first = tkinter.Label(topFrame, text="Memory Pit", font=(titleFont), fg=foregroundColour)
-    first.grid(column=0, row=0, sticky="w", padx=5)
-    subtitle = tkinter.Label(topFrame, text='thank you, shutterbug2000!', font=(subtitleFont), fg=foregroundColour)
-    subtitle.grid(column=0, row=1, sticky="w", padx=5)
-    filler = tkinter.Label(topFrame, text=" ")
-    filler.grid(column=0, row=3)
-    downloadmemorypitCheck = tkinter.Checkbutton(topFrame, text = "Download Memory pit exploit?", font=(buttonFont), fg=foregroundColour, variable = downloadmemorypit)
-    downloadmemorypitCheck.grid(column=0, row=2, sticky="w")
-    firmwareLabel = tkinter.Label(topFrame, text = "Select your DSi firmware : ", fg=foregroundColour, font=(buttonFont))
-    firmwareLabel.grid(column=0, row=4, sticky="w")
-    selector = tkinter.OptionMenu(topFrame, firmwareVersion, *dsiVersions)
-    selector.config(bg=buttonColour, fg=foregroundColour, font=(buttonFont))
-    selector["menu"].config(bg=buttonColour, fg=foregroundColour, font=(buttonFont))
-    selector.grid(column=0, row=5, sticky="w")
-
-    if platform.system() == "Darwin":
-        macOS_hiddentext = tkinter.Label(topFrame, text = "(Click the area above this text\n if you can't see the drop down menu) ", fg=foregroundColour, font=(bodyFont))
-        macOS_hiddentext.grid(column=0, row=6, sticky="w")
-
-    backButton = Button(bottomFrame,text="Back", font=(buttonFont), fg=foregroundColour, bg=backButtonColour, command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow0()], width=button_width)
-    backButton.pack(side=tkinter.LEFT)
-    nextButton = Button(bottomFrame, text="Next",width=button_width, fg=foregroundColour, bg=nextButtonColour, font=(buttonFont),command=lambda: [topFrame.destroy(), bottomFrame.destroy(), summonWindow2()])
-    nextButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
-    window.protocol("WM_DELETE_WINDOW", lambda: closeButtonPress(window))
-
-
-def summonWindow2():
-    topFrame = tkinter.Frame(window)
-    topFrame.pack(expand=True, fill=tkinter.BOTH, padx=5)
-    topFrame.option_add("*Background", backgroundColour)
-    bottomFrame = tkinter.Frame(window)
-    bottomFrame.pack(side=tkinter.BOTTOM, fill=tkinter.X,padx=5)
-    bottomFrame.option_add("*Background", backgroundColour)
-    first = tkinter.Label(topFrame, text="Homebrew Section", font=(titleFont), fg=foregroundColour)
-    first.grid(column=0,row=0, sticky="w")
-    subtitle = tkinter.Label(topFrame, text='brewed at home', font=(subtitleFont), fg=foregroundColour)
-    subtitle.grid(column=0,row=1,sticky="w")
-    downloadtwlmenuCheck = tkinter.Checkbutton(topFrame, text = "Download latest TWiLight Menu++ version?",fg=foregroundColour, variable = downloadtwlmenu,font=(buttonFont))
-    downloadtwlmenuCheck.grid(column=0,row=2, sticky ="w")
-    downloaddumptoolCheck = tkinter.Checkbutton(topFrame, text ="Download latest dumpTool version?", variable=downloaddumptool,fg=foregroundColour,font=(buttonFont))
-    downloaddumptoolCheck.grid(column=0,row=3,sticky="w")
-    unlaunchCheck = tkinter.Checkbutton(topFrame, text = "Download latest Unlaunch version?", variable =unlaunch, fg=foregroundColour,font=(buttonFont))
-    unlaunchCheck.grid(column=0,row=4,sticky="w")
-    seperator = tkinter.Label(topFrame, text="───────────────────────────────────────────────────────────", font=(buttonFont), fg=foregroundColour)
-    seperator.grid(column=0,row=5,sticky="w")
-    GodMode9iCheck = tkinter.Checkbutton(topFrame, text = "Download latest GodMode9i version?", variable =godmode9i, fg=foregroundColour,font=(buttonFont))
-    GodMode9iCheck.grid(column=0,row=6,sticky="w")
-    updateHiyaCheck = tkinter.Checkbutton(topFrame, text = "Update hiyaCFW? (must have run hiyaHelper once before)", variable =updateHiyaCFW, fg=foregroundColour,font=(buttonFont))
-    updateHiyaCheck.grid(column=0,row=7,sticky="w")
-    buttonExtraHomebrew = tkinter.Button(topFrame, text = "Click to add Additional homebrew...", command =lambda:[extraHomebrew(window)], fg=foregroundColour,font=(buttonFont),bg=buttonColour)
-    buttonExtraHomebrew.grid(column=0,row=8,sticky="w",pady=5)
-    backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow1()], width=button_width)
-    backButton.pack(side=tkinter.LEFT)
-    nextButton = Button(bottomFrame, text="Next",width=button_width, fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow3()])
-    nextButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
-    window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
-
-
-def summonWindow3():
-    topFrame = tkinter.Frame(window)
-    topFrame.pack(expand=True, fill=tkinter.BOTH,padx=5)
-    topFrame.option_add("*Background", backgroundColour)
-    bottomFrame = tkinter.Frame(window)
-    bottomFrame.pack(side=tkinter.BOTTOM, fill=tkinter.X,padx=5)
-    bottomFrame.option_add("*Background", backgroundColour)
-    first = tkinter.Label(topFrame, text="Select SD Card", font=(titleFont), fg=foregroundColour)
-    first.grid(column=0,row=0, sticky="w")
-    subtitle = tkinter.Label(topFrame, text='ready to download?', font=(subtitleFont), fg=foregroundColour)
-    subtitle.grid(column=0,row=1,sticky="w")
-    noticeLabel=tkinter.Label(topFrame,text="Plug in your SD card and select the root directory :", fg=foregroundColour, font=(buttonFont))
-    noticeLabel.grid(column=0,row=2,sticky="w")
-    SDentry = tkinter.Entry(topFrame, fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=35)
-    SDentry.grid(column=0, row=3,sticky="w")
-    chooseDirButton = Button(topFrame, text = "Click to select folder", command =lambda:chooseDir(topFrame,SDentry),fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=folder_width)
-    chooseDirButton.grid(column=0, row=4,sticky="w",pady=5)
-    backButton = Button(bottomFrame,text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow2()], width=button_width)
-    backButton.pack(side=tkinter.LEFT)
-    nextButton = Button(bottomFrame, text="Start",width=button_width, fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[globalify(SDentry.get()),topFrame.destroy(),bottomFrame.destroy(),summonWindow4()])
-    nextButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
-    window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
-
-
-def globalify(value):
-    global SDentry
-    SDentry = value
-
-
-def summonWindow4():
-    startThread = threading.Thread(target=start, daemon=True)
-    topFrame = tkinter.Frame(window)
-    topFrame.pack(expand=True, fill=tkinter.BOTH,padx=5)
-    topFrame.option_add("*Background", backgroundColour)
-    bottomFrame = tkinter.Frame(window)
-    bottomFrame.pack(side=tkinter.BOTTOM, fill=tkinter.X,padx=5)
-    bottomFrame.option_add("*Background", backgroundColour)
-    first = tkinter.Label(topFrame, text="Download Screen", font=(titleFont), fg=foregroundColour)
-    first.grid(column=0,row=0, sticky="w")
-    subtitle = tkinter.Label(topFrame, text='please wait...', font=(subtitleFont), fg=foregroundColour)
-    subtitle.grid(column=0,row=1,sticky="w")
-    global outputBox
-    outputBox = tkinter.Text(topFrame,state='disabled', width = 60, height = 15, bg="black", fg="white")
-    outputBox.grid(column=0,row=2,sticky="w")
-    startThread.start()
-    global finalbackButton
-    finalbackButton = Button(bottomFrame,state="disabled",  text="Back", font=(buttonFont),fg=foregroundColour,bg=backButtonColour,command=lambda: [topFrame.destroy(),bottomFrame.destroy(),summonWindow3()], width=button_width)
-    finalbackButton.pack(side=tkinter.LEFT)
-    global finalnextButton
-    finalnextButton = Button(bottomFrame, state="disabled", text="Finish",width=button_width, fg=foregroundColour,bg=nextButtonColour, font=(buttonFont),command=lambda:[topFrame.destroy(),bottomFrame.destroy(),summonWindow5()])
-    finalnextButton.pack(side=tkinter.RIGHT, padx=5, pady=5)
-    window.protocol("WM_DELETE_WINDOW",lambda:donothing)
-
-
-def summonWindow5():
-    topFrame = tkinter.Frame(window)
-    topFrame.pack(expand=True, fill=tkinter.BOTH,padx=5)
-    topFrame.option_add("*Background", backgroundColour)
-    bottomFrame = tkinter.Frame(window)
-    bottomFrame.pack(side=tkinter.BOTTOM, fill=tkinter.X,padx=5)
-    bottomFrame.option_add("*Background", backgroundColour)
-    first = tkinter.Label(topFrame, text="Completed", font=(titleFont), fg=foregroundColour)
-    first.grid(column=0,row=0, sticky="w")
-    label= tkinter.Label(topFrame,text="Your SD card is now ready to run and use Homebrew on your Nintendo DSi.",font=(bodyFont),fg=foregroundColour,wraplength=450,justify="left")
-    label.grid(column=0,row=2,sticky="w")
-    labellink= tkinter.Label(topFrame,text="You can now eject your SD card and follow the steps of https://dsi.cfw.guide/",font=(bodyFont),fg=foregroundColour,wraplength=450,justify="left")
-    labellink.grid(column=0,row=3,sticky="w")
-    labellink.bind("<Button-1>", lambda e: webbrowser.open_new("https://dsi.cfw.guide/"))
-    label= tkinter.Label(topFrame,text="Credits to",font=(bodyFont),fg=foregroundColour)
-    label.grid(column=0,row=4,sticky="w")
-    bulletpoints = ["YourKalamity - Creator","NightScript - Idea & Writer of dsi.cfw.guide","Emiyl - Writer of dsi.cfw.guide","SNBeast - Testing and pointing out errors","Everybody that helped create the homebrew downloaded by this app","Kaisaan - Yes"]
-    w = 5
-    for x in bulletpoints:
-        label = tkinter.Label(topFrame,text=x,font=(bigListFont),fg=foregroundColour)
-        label.grid(column=0,row=w,sticky="w")
-        w = w + 1
-    label= tkinter.Label(topFrame,text="Press the Close button to Exit",font=(bodyFont),fg=foregroundColour)
-    label.grid(column=0,row=w+1,sticky="w")
-    finish = Button(bottomFrame, text="Close", width=button_width, fg=foregroundColour, bg=nextButtonColour, font=(buttonFont),command=lambda: [topFrame.destroy(), bottomFrame.destroy(), closeButtonPress(window)])
-    finish.pack(side=tkinter.RIGHT, padx=5, pady=5)
-    window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
+def get_SD_path(widget):
+    path = QtWidgets.QFileDialog().getExistingDirectory(
+        widget, "Select SD card path")
+    path = get_root(path)
+    widget.SDDirectoryInput.setText(path)
 
 
 if __name__ == "__main__":
-    if(sys.version_info.major < 3):
-        print("This program will ONLY work on Python 3 and above")
-        sys.exit()
-    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
-
-    root = tkinter.Tk()
-    window = tkinter.Toplevel(root)
-    root.withdraw()
-
-    # Homebrew Database
-    homebrewDB = json.loads(requests.get('https://raw.githubusercontent.com/YourKalamity/just-a-dsi-DB/master/just-a-dsi-DB.json').content)
-    homebrewList = []
-    for x in homebrewDB:
-        homebrewList.append(tkinter.IntVar())
-
-    # TKinter Vars
-    downloadmemorypit = tkinter.IntVar(value=1)
-    firmwareVersion = tkinter.StringVar()
-    firmwareVersion.set(dsiVersions[1])
-    downloadtwlmenu = tkinter.IntVar(value=1)
-    downloaddumptool = tkinter.IntVar(value=1)
-    unlaunch = tkinter.IntVar(value=0)
-    godmode9i = tkinter.IntVar(value=0)
-    updateHiyaCFW = tkinter.IntVar(value=0)
-
-    # Fonts
-    titleFont = tkinter.font.Font(
-        family="Segoe UI",
-        size=15,
-        weight="bold"
-    )
-    subtitleFont = tkinter.font.Font(
-        family="Segoe UI",
-        size=11,
-        slant="italic"
-    )
-    bodyFont = tkinter.font.Font(
-        family="Segoe UI",
-        underline=False,
-        size=11
-    )
-    buttonFont = tkinter.font.Font(
-        family="Segoe UI",
-        underline=False,
-        size=11,
-        weight="bold"
-    )
-    bigListFont = tkinter.font.Font(
-        family="Segoe UI",
-        underline=False,
-        size=9
-    )
-    paragraphFont = tkinter.font.Font(
-        family="Segoe UI",
-        size=12
-    )
-
-    if platform.system() == "Darwin":
-        from tkmacosx import Button
-        backgroundColour = "#f0f0f0"
-        foregroundColour = "black"
-        buttonColour = "#f0f0f0"
-        backButtonColour = "#f0f0f0"
-        nextButtonColour = "#f0f0f0"
-        button_width = 80
-        folder_width = 350
-    else:
-        from tkinter import Button
-        backgroundColour = "#252a34"
-        foregroundColour = "white"
-        buttonColour = "#7289DA"
-        backButtonColour = "#567487"
-        nextButtonColour = "#027b76"
-        button_width = 8
-        folder_width = 35
-
-    summonWindow0()
-    root.mainloop()
+    loader = QUiLoader()
+    app = QtWidgets.QApplication(sys.argv)
+    widget = loader.load("gui.ui")
+    homebrewlist, homebrewDB = add_homebrew_to_list(widget)
+    set_up(widget)
+    widget.show()
+    sys.exit(app.exec())

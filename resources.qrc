@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="lazy-icon">
+    <file>assets/files/photos/lazy_300x300.png</file>
+    <file>assets/files/photos/lazy.png</file>
+  </qresource>
+  <qresource prefix="help">
+    <file>assets/files/photos/wherestheroot.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,14 @@
+certifi==2021.10.8
+chardet==4.0.0
+charset-normalizer==2.0.12
+click==8.0.4
+colorama==0.4.4
+colour==0.1.5
+idna==3.3
+ppmd==0.1.1
+PySide6==6.2.2.1
+pyzstd==0.15.2
+requests==2.27.1
+shiboken6==6.2.2.1
+tkmacosx==1.0.4
+urllib3==1.26.8
