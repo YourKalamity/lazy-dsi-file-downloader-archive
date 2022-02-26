@@ -71,7 +71,7 @@ jobs:
         run: |
           mkdir temporary
           cp -r Darwin Linux temporary/
-          cp gui.ui lazy.ico LICENSE main.py README.md resources.py resources.qrc requirments.txt temporary/
+          cp gui.ui lazy.ico LICENSE main.py README.md resources.py resources.qrc requirements.txt temporary/
           cd temporary
           chmod +x main.py
           zip -r ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip *
