@@ -24,7 +24,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.8.x"
+          python-version: "3.x"
           architecture: "x86"
 
       - name: Setup Virtual Environment
@@ -115,7 +115,8 @@ jobs:
 
       - name: Create executable
         run: |
-          pyinstaller --onefile --paths .\env\Lib\site-packages\ --add-data "gui.ui;." --add-data "resources.qrc;." --add-data ".\env/Lib/site-packages/PySide6/plugins;PySide6/plugins/" --add-data ".\env/Lib/site-packages/PySide6/qml;PySide6/qml/"  --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS" main.py
+
+          pyinstaller --onefile --paths .\env\Lib\site-packages\ --add-data "gui.ui:." --add-data "lazy.ico:." --add-data "resources.qrc:." --add-data ".\env/Lib/site-packages/PySide6/plugins:PySide6/plugins/" --add-data ".\env/Lib/site-packages/PySide6/qml:PySide6/qml/"  --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS" main.py
           cd dist
           chmod +x lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
           zip ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS.zip lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
