@@ -34,10 +34,11 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip3 install -r requirements.txt
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
       - name: Install pyinstaller
         run: |
-          pip3 install pyinstaller
+          python -m pip install pyinstaller
 
       - name: Get tag
         id: vars
@@ -46,7 +47,7 @@ jobs:
 
       - name: Make binary
         run: |
-          pyinstaller --onefile --paths .\env\Lib\site-packages\ --add-data "gui.ui;." --add-data "lazy.ico;." --add-data "resources.qrc;." --add-data ".\env/Lib/site-packages/PySide6/plugins;PySide6/plugins/" --add-data ".\env/Lib/site-packages/PySide6/qml;PySide6/qml/"  --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows" main.py
+          pyinstaller --onefile --paths .\env\Lib\site-packages\ --add-data "gui.ui;." --add-data "lazy.ico;." --add-data "resources.qrc;." --add-data ".\env/Lib/site-packages/PySide6/plugins;PySide6/plugins/" --add-data ".\env/Lib/site-packages/PySide6/qml;PySide6/qml/"  --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows" --scriptname "main.py"
           cd dist
 
       - name: Publish builds
