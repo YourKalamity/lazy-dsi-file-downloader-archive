@@ -12,33 +12,49 @@ on:
 ######################################################################################
 
 jobs:
+
+
   windows:
     runs-on: windows-latest
     name: Windows
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
+
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: "3.8.x"
           architecture: "x86"
+
+      - name: Setup Virtual Environment
+        run: |
+          python -m venv env
+          ./env/Scripts/Activate.ps1
+
+      - name: Install Dependencies
+        run: |
+          pip3 install -r requirements.txt
       - name: Install pyinstaller
         run: |
-          pip3 install certifi pyinstaller
+          pip3 install pyinstaller
+
       - name: Get tag
         id: vars
         shell: bash
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
       - name: Make binary
         run: |
-          pyinstaller --onefile --add-data "certifi;certifi" --add-data "requests;requests" --add-data "urllib3;urllib3" --add-data "lazy.ico;." --add-data "chardet;chardet" --icon "lazy.ico" --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows" main.py
+          pyinstaller --onefile --paths .\env\Lib\site-packages\ --add-data "gui.ui;." --add-data "lazy.ico;." --add-data "resources.qrc;." --add-data ".\env/Lib/site-packages/PySide6/plugins;PySide6/plugins/" --add-data ".\env/Lib/site-packages/PySide6/qml;PySide6/qml/"  --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows" main.py
           cd dist
+
       - name: Publish builds
         uses: actions/upload-artifact@v2
         with:
           path: dist/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows.exe
           name: windows
+
 
   python:
     runs-on: ubuntu-latest
@@ -46,47 +62,64 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+
       - name: Get tag
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
       - name: Make zip
         run: |
           mkdir temporary
-          cp -r certifi chardet Darwin idna Linux requests urllib3 tkmacosx temporary/
-          cp LICENSE main.py colour.py README.md temporary/
+          cp -r Darwin Linux temporary/
+          cp gui.ui lazy.ico LICENSE main.py README.md resources.py resources.qrc requirments.txt temporary/
           cd temporary
           chmod +x main.py
-          zip -r ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip * 
+          zip -r ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip *
+
       - name: Publish artifact
         uses: actions/upload-artifact@v2
         with:
           path: lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip
           name: python
 
-  
+
   macos:
     runs-on: macos-latest
     name: macOS
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
+
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: "3.x"
           architecture: "x64"
+
+      - name: Setup Virtual Environment
+        run: |
+          python -m venv env
+          source env/bin/activate
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install -r requirements.txt
+
       - name: Install pyinstaller
         run: |
-          pip3 install pyinstaller
+          python -m pip install pyinstaller
+
       - name: Get tag
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
       - name: Create executable
         run: |
-          pyinstaller --onefile --add-data "colour.py:." --add-data "tkmacosx:tkmacosx" --add-data "Darwin:Darwin" --add-binary "Darwin/7za:Darwin" --add-data "certifi:certifi" --add-data "requests:requests" --add-data "urllib3:urllib3" --add-data "lazy.ico:." --add-data "chardet:chardet" --icon "lazy.ico" --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS" main.py
+          pyinstaller --onefile --paths .\env\Lib\site-packages\ --add-data "gui.ui;." --add-data "lazy.ico;." --add-data "resources.qrc;." --add-data ".\env/Lib/site-packages/PySide6/plugins;PySide6/plugins/" --add-data ".\env/Lib/site-packages/PySide6/qml;PySide6/qml/"  --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS" main.py
           cd dist
           chmod +x lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
           zip ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS.zip lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
+
       - name: Publish artifact
         uses: actions/upload-artifact@v2
         with:

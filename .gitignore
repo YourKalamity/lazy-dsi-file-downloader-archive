@@ -7,3 +7,4 @@ build/*
 bcj/*
 env/*
 .vscode/*
+*.spec
