@@ -46,7 +46,7 @@ jobs:
 
       - name: Make binary
         run: |
-          pyinstaller --onefile --paths .\env\Lib\site-packages\ --add-data "gui.ui;." --add-data "lazy.ico;." --add-data "resources.qrc;." --add-data ".\env/Lib/site-packages/PySide6/plugins;PySide6/plugins/" --add-data ".\env/Lib/site-packages/PySide6/qml;PySide6/qml/"  --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows" --scriptname "main.py"
+          pyinstaller --onefile --paths .\env\Lib\site-packages\ --add-data "gui.ui;." --add-data "lazy.ico;." --add-data "resources.qrc;." --add-data ".\env/Lib/site-packages/PySide6/plugins;PySide6/plugins/" --add-data ".\env/Lib/site-packages/PySide6/qml;PySide6/qml/"  --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows" main.py
           cd dist
 
       - name: Publish builds
@@ -115,7 +115,7 @@ jobs:
       - name: Create executable
         run: |
 
-          pyinstaller --onefile --paths .\env\Lib\site-packages\ --add-data "gui.ui:." --add-data "lazy.ico:." --add-data "resources.qrc:." --add-data ".\env/Lib/site-packages/PySide6/plugins:PySide6/plugins/" --add-data ".\env/Lib/site-packages/PySide6/qml:PySide6/qml/"  --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS" --scriptname "main.py"
+          pyinstaller --onefile --paths .\env\Lib\site-packages\ --add-data "gui.ui:." --add-data "lazy.ico:." --add-data "resources.qrc:." --add-data ".\env/Lib/site-packages/PySide6/plugins:PySide6/plugins/" --add-data ".\env/Lib/site-packages/PySide6/qml:PySide6/qml/"  --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS" main.py
           cd dist
           chmod +x lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
           zip ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS.zip lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
