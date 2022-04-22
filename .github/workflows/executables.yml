@@ -5,57 +5,42 @@ on:
     types: [published]
   workflow_dispatch:
 
-######################################################################################
-# Based off of :
-# https://github.com/mondul/HiyaCFW-Helper/blob/master/.github/workflows/make-dist.yml
-# Thanks to Epicpkmn11 for helping with this
-######################################################################################
-
 jobs:
-
 
   windows:
     runs-on: windows-latest
     name: Windows
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v3
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
-          python-version: "3.x"
-          architecture: "x86"
-
+          python-version: "3.8.x"
       - name: Setup Virtual Environment
         run: |
           python -m venv env
           ./env/Scripts/Activate.ps1
-
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
-      - name: Install pyinstaller
+      - name: Install cx_Freeze
         run: |
-          python -m pip install pyinstaller
-
+          python -m pip install cx_Freeze
       - name: Get tag
         id: vars
         shell: bash
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-
       - name: Make binary
         run: |
-          pyinstaller --onefile --paths .\env\Lib\site-packages\ --add-data "gui.ui;." --add-data "lazy.ico;." --add-data "resources.qrc;." --add-data ".\env/Lib/site-packages/PySide6/plugins;PySide6/plugins/" --add-data ".\env/Lib/site-packages/PySide6/qml;PySide6/qml/"  --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows" --scriptname "main.py"
-          cd dist
-
+          python cx_freeze_setup.py build
+          mv dist/main.exe dist/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows.exe
       - name: Publish builds
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          path: dist/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows.exe
+          path: dist
           name: windows
-
 
   python:
     runs-on: ubuntu-latest
@@ -95,7 +80,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: "3.x"
-          architecture: "x64"
 
       - name: Setup Virtual Environment
         run: |
@@ -136,15 +120,10 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v2
-      - name: Upload to Release
-        run: |
-          ID=$(jq --raw-output '.release.id' $GITHUB_EVENT_PATH)
-
-          for file in ${{ github.workspace }}/*/*; do
-            AUTH_HEADER="Authorization: token ${{ secrets.GITHUB_TOKEN }}"
-            CONTENT_LENGTH="Content-Length: $(stat -c%s $file)"
-            CONTENT_TYPE="Content-Type: application/octet-stream"
-            UPLOAD_URL="https://uploads.github.com/repos/${{ github.repository }}/releases/$ID/assets?name=$(basename $file)"
-            curl -XPOST -H "$AUTH_HEADER" -H "$CONTENT_LENGTH" -H "$CONTENT_TYPE" --upload-file "$file" "$UPLOAD_URL"
-          done      
-      
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            windows/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows.zip
+            macos/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS.zip
+            python/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip 
