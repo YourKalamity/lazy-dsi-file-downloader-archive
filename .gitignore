@@ -1,8 +1,7 @@
 *.pyc
-__pycache__/*
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+__pycache__/
+.vscode/
 *.code-workspace
+env
+.DS_Store
+dist
