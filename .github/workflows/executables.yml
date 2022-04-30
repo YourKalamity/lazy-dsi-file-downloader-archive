@@ -17,27 +17,26 @@ jobs:
     name: Windows
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: "3.8.x"
-          architecture: "x86"
-      - name: Install pyinstaller
-        run: |
-          pip3 install certifi pyinstaller
+      - name: Install cx_Freeze
+        run: py -m pip install cx_Freeze
       - name: Get tag
         id: vars
         shell: bash
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Make binary
         run: |
-          pyinstaller --onefile --add-data "certifi;certifi" --add-data "requests;requests" --add-data "urllib3;urllib3" --add-data "lazy.ico;." --add-data "chardet;chardet" --icon "lazy.ico" --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows" main.py
-          cd dist
+          py cxfreeze_setup.py build
+          mv dist/main.exe dist/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows.exe
+        shell: bash
       - name: Publish builds
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          path: dist/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows.exe
+          path: dist
           name: windows
 
   python:
@@ -45,7 +44,7 @@ jobs:
     name: Python 3 build
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Get tag
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
@@ -58,7 +57,7 @@ jobs:
           chmod +x main.py
           zip -r ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip * 
       - name: Publish artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip
           name: python
@@ -69,12 +68,11 @@ jobs:
     name: macOS
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: "3.x"
-          architecture: "x64"
       - name: Install pyinstaller
         run: |
           pip3 install pyinstaller
@@ -88,7 +86,7 @@ jobs:
           chmod +x lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
           zip ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS.zip lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
       - name: Publish artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS.zip
           name: macos
@@ -100,16 +98,19 @@ jobs:
     needs: [windows,python,macos]
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v2
-      - name: Upload to Release
+        uses: actions/download-artifact@v3
+      - name: Get tag
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: re-zip Windows
         run: |
-          ID=$(jq --raw-output '.release.id' $GITHUB_EVENT_PATH)
-
-          for file in ${{ github.workspace }}/*/*; do
-            AUTH_HEADER="Authorization: token ${{ secrets.GITHUB_TOKEN }}"
-            CONTENT_LENGTH="Content-Length: $(stat -c%s $file)"
-            CONTENT_TYPE="Content-Type: application/octet-stream"
-            UPLOAD_URL="https://uploads.github.com/repos/${{ github.repository }}/releases/$ID/assets?name=$(basename $file)"
-            curl -XPOST -H "$AUTH_HEADER" -H "$CONTENT_LENGTH" -H "$CONTENT_TYPE" --upload-file "$file" "$UPLOAD_URL"
-          done      
-      
+          cd windows
+          zip -r lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows.zip *
+          cd ..
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            windows/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows.zip
+            macos/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS.zip
+            python/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip  
