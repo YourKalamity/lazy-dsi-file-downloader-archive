@@ -22,6 +22,7 @@ import webbrowser
 import threading
 import hashlib
 from distutils import dir_util
+import py7zr
 
 pageNumber = 0
 
@@ -49,8 +50,7 @@ def downloadFile(link, destination):
         downloadLocation = destination + fileName
         open(downloadLocation, 'wb').write(r.content)
         return downloadLocation
-    except requests.exceptions.ConnectionError as e:
-        print(e)
+    except Exception as e:
         print("File not available, skipping...")
         return None
 
@@ -107,9 +107,18 @@ def unzipper(unzipped, destination):
         zip_ref.close()
 
 
-def un7zipper(_7za, zipfile, destination):
-    un7zipper = Popen([_7za, "x", "-aoa", zipfile, '-o'+destination])
-    un7zipper.wait()
+def un7zipper(zipfile, destination, files=None):
+    if py7zr.is_7zfile(zipfile):
+        with py7zr.SevenZipFile(zipfile) as archive:
+            if files is None:
+                archive.extractall(path=destination)
+            else:
+                targets = files
+                for extractable in archive.getnames():
+                    for file in files:
+                        if extractable != file and extractable.startswith(file):
+                            targets.append(extractable)
+                archive.extract(path=destination, targets=files)
 
 
 def start():
@@ -117,50 +126,6 @@ def start():
     outputBox.configure(state='normal')
     outputBox.delete('1.0', tkinter.END)
     outputBox.configure(state='disabled')
-
-    # Locate 7z binary
-    sysname = platform.system()
-    _7za = os.path.join(sysname, '7za')
-    _7z = None
-    if sysname in ["Darwin", "Linux"]:
-        # Chmod 7z binary to avoid a permission error
-        import stat
-        os.chmod(_7za, stat.S_IRWXU)
-    if sysname == "Windows":
-        # Search for 7z in the 64-bit Windows Registry
-        import winreg
-        print('Searching for 7-Zip in the Windows registry...')
-        try:
-            with winreg.OpenKey(
-                winreg.HKEY_LOCAL_MACHINE,
-                'SOFTWARE\\7-Zip', 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY
-            ) as hkey:
-                _7z = os.path.join(winreg.QueryValueEx(
-                    hkey, 'Path')[0], '7z.exe')
-
-                if not os.path.exists(_7z):
-                    raise WindowsError
-                _7za = _7z
-        except WindowsError:
-            # Search for 7z in the 32-bit Windows Registry
-            print('Searching for 7-Zip in the 32-bit Windows registry...')
-
-            try:
-                with winreg.OpenKey(
-                    winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\\7-Zip'
-                ) as hkey:
-                    _7z = os.path.join(winreg.QueryValueEx(hkey, 'Path')[0], '7z.exe')
-
-                    if not os.path.exists(_7z):
-                        raise WindowsError
-
-                    _7za = _7z
-            except WindowsError:
-                print("7-Zip not found, please install it before using")
-                outputbox("7-Zip not found \n")
-                finalbackButton.configure(state='normal')
-                return
-    print("7-Zip found!")
 
     lineCounter = 0
     directory = SDentry
@@ -202,12 +167,11 @@ def start():
             print("TWiLight Menu ++ Downloaded")
 
             # Extract TWiLight Menu
-            proc = Popen([_7za,"x", "-aoa", TWLmenuLocation, '-o'+cwdtemp, '_nds', 'hiya', 'roms','title', 'BOOT.NDS','snemul.cfg'])
-            ret_val = proc.wait()
+
+            un7zipper(zipfile=TWLmenuLocation, destination=cwdtemp, files=['_nds', 'hiya', 'roms','title', 'BOOT.NDS','snemul.cfg'])
             outputbox("TWiLight Menu ++ Extracted\n")
             print("TWiLight Menu ++ Extracted to", cwdtemp)
             originalHash = hashcreator(cwdtemp + "BOOT.NDS")
-
             # Move TWiLight Menu
             shutil.copy(cwdtemp + "BOOT.NDS", directory)
             distutils.dir_util.copy_tree(cwdtemp + "_nds/", directory + "/_nds/")
@@ -225,7 +189,7 @@ def start():
         # Download DeadSkullzJr's Cheat Database
         Path(directory + "/_nds/TWiLightMenu/extras/").mkdir(parents=True, exist_ok=True)
         outputbox("Downloading DeadSkullzJr's Cheat database\n")
-        downloadLocation = downloadFile('https://bitbucket.org/DeadSkullzJr/nds-cheat-databases/raw/933c375545d3ff90854d1e210dcf4b3b31d9d585/Cheats/usrcheat.dat', directory + "/_nds/TWiLightMenu/extras/")
+        downloadLocation = downloadFile('https://bitbucket.org/DeadSkullzJr/nds-i-cheat-databases/raw/963fff3858de7539891ef7918d992b8b06972a48/Cheat%20Databases/usrcheat.dat', directory + "/_nds/TWiLightMenu/extras/")
         if downloadLocation is not None:
             print("DeadSkullzJr's Cheat Database downloaded")
             outputbox("DeadSkullzJr's Cheat Database downloaded\n")
@@ -264,9 +228,7 @@ def start():
             print("GodMode9i downloaded")
             outputbox("GodMode9i Downloaded\n")
             lineCounter = lineCounter + 1
-            # Extract TWiLight Menu
-            proc = Popen([_7za,"x", "-aoa", downloadLocation, '-o'+roms, 'GodMode9i.nds'])
-            ret_val = proc.wait()
+            un7zipper(zipfile=downloadLocation, destination=roms, files=['GodMode9i.nds'])
             outputbox("GodMode9i Extracted\n")
             print("GodMode9i Extracted to", roms)
 
@@ -280,8 +242,7 @@ def start():
             if downloadLocation is not None:
                 outputbox("hiyaCFW.7z downloaded\n")
                 os.remove(directory+"/hiya.dsi")
-                proc = Popen([_7za,"x","-aoa",downloadLocation, "-o"+directory,"for SDNAND SD card\hiya.dsi"])
-                ret_val = proc.wait()
+                un7zipper(zipfile=downloadLocation, destination=directory, files=['for SDNAND SD card/hiya.dsi'])
                 shutil.move(directory + "/for SDNAND SD card/hiya.dsi", directory + "/hiya.dsi")
                 shutil.rmtree(directory + "/for SDNAND SD card/")
         else:
@@ -315,10 +276,10 @@ def start():
                 downloadLocation = downloadFile(downloadlink, cwdtemp)
                 if downloadLocation is not None:
                     if item["location"]["roms"] == "all":
-                        un7zipper(_7za, downloadLocation, roms)
+                        un7zipper(downloadLocation, roms)
                         outputbox("Downloaded "+item["title"]+'\n')
                     else:
-                        un7zipper(_7za, downloadLocation, cwdtemp)
+                        un7zipper(downloadLocation, cwdtemp)
                         if "root" in item["location"]:
                             Path(directory+(item["location"]["root"].split('/')).pop()).mkdir(parents=True, exist_ok=True)
                             shutil.copy(cwdtemp+item["location"]["root"], directory+((item["location"]["root"].split('/')).pop().pop(0)))
