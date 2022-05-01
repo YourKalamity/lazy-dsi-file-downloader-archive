@@ -77,6 +77,10 @@ def outputbox(message):
 
 
 def validateDirectory(directory):
+    if directory == "":
+        outputbox("That's not a valid directory \n")
+        outputbox("Press the Back button to change the folder\n")
+        return False
     try:
         directory = str(directory)
     except TypeError:
@@ -174,6 +178,7 @@ def start():
             originalHash = hashcreator(cwdtemp + "BOOT.NDS")
             # Move TWiLight Menu
             shutil.copy(cwdtemp + "BOOT.NDS", directory)
+            shutil.copy(cwdtemp + "snemul.cfg", directory)
             distutils.dir_util.copy_tree(cwdtemp + "_nds/", directory + "/_nds/")
             distutils.dir_util.copy_tree(cwdtemp + "hiya", directory + "/hiya/")
             distutils.dir_util.copy_tree(cwdtemp + "title", directory + "/title/")
@@ -228,7 +233,8 @@ def start():
             print("GodMode9i downloaded")
             outputbox("GodMode9i Downloaded\n")
             lineCounter = lineCounter + 1
-            un7zipper(zipfile=downloadLocation, destination=roms, files=['GodMode9i.nds'])
+            un7zipper(zipfile=downloadLocation, destination=cwdtemp, files=['GodMode9i/GodMode9i.nds'])
+            shutil.copy(cwdtemp + "GodMode9i/GodMode9i.nds", roms)
             outputbox("GodMode9i Extracted\n")
             print("GodMode9i Extracted to", roms)
 
@@ -378,7 +384,7 @@ def summonWindow0():
         ]
 
     for count, x in enumerate(bulletpoints):
-        bullet = tkinter.Label(topFrame, text="• "+x, font=(paragraphFont), fg=foregroundColour, wraplength=500, justify="left")
+        bullet = tkinter.Label(topFrame, text="• "+x, font=(paragraphFont), fg=foregroundColour, wrap=tkinter.WORD, justify="left")
         bullet.grid(column=0, row=count+3, sticky="w", padx=5)
     
     discordButton = Button(bottomFrame, text="DS⁽ⁱ⁾ Mode Hacking Discord server", fg=foregroundColour, bg=buttonColour, font=(buttonFont), command=lambda: webbrowser.open("https://discord.gg/yD3spjv", new=1))
