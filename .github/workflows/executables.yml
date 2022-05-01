@@ -51,7 +51,7 @@ jobs:
       - name: Make zip
         run: |
           mkdir temporary
-          cp -r bcj certifi chardet Cryptodome idna multivolumefile psutil py7zr pyppmd pyzstd zipfile_deflate64 requests urllib3 tkmacosx temporary/
+          cp -r brotlicffi cffi pycparser bcj certifi chardet Cryptodome idna multivolumefile psutil py7zr pyppmd pyzstd zipfile_deflate64 requests urllib3 tkmacosx temporary/
           cp LICENSE main.py colour.py brotli.py texttable.py README.md temporary/
           cd temporary
           chmod +x main.py
@@ -81,7 +81,7 @@ jobs:
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Create executable
         run: |
-          pyinstaller --onefile --add-data "texttable.py:." --add-data "brotli.py:." --add-data "bcj:bcj" --add-data "Cryptodome:Cryptodome" --add-data "multivolumefile:multivolumefile" --add-data "psutil:psutil" --add-data "pyppmd:pyppmd" --add-data "zipfile_deflate64:zipfile_deflate64" --add-data "colour.py:." --add-data "tkmacosx:tkmacosx" --add-data "certifi:certifi" --add-data "requests:requests" --add-data "urllib3:urllib3" --add-data "lazy.ico:." --add-data "chardet:chardet" --icon "lazy.ico" --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS" main.py
+          pyinstaller --onefile --add-data "brotlicffi:brotlicffi" --add-data "cffi:cffi" --add-data "pycparser:pycparser" --add-data "texttable.py:." --add-data "brotli.py:." --add-data "bcj:bcj" --add-data "Cryptodome:Cryptodome" --add-data "multivolumefile:multivolumefile" --add-data "psutil:psutil" --add-data "pyppmd:pyppmd" --add-data "zipfile_deflate64:zipfile_deflate64" --add-data "colour.py:." --add-data "tkmacosx:tkmacosx" --add-data "certifi:certifi" --add-data "requests:requests" --add-data "urllib3:urllib3" --add-data "lazy.ico:." --add-data "chardet:chardet" --icon "lazy.ico" --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS" main.py
           cd dist
           chmod +x lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
           zip ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS.zip lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
