@@ -1,6 +1,6 @@
 *.pyc
 __pycache__/
-.vscode/
+.vscode
 *.code-workspace
 env
 .DS_Store

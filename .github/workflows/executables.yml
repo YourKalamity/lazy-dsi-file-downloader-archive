@@ -5,12 +5,6 @@ on:
     types: [published]
   workflow_dispatch:
 
-######################################################################################
-# Based off of :
-# https://github.com/mondul/HiyaCFW-Helper/blob/master/.github/workflows/make-dist.yml
-# Thanks to Epicpkmn11 for helping with this
-######################################################################################
-
 jobs:
   windows:
     runs-on: windows-latest
@@ -22,8 +16,13 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: "3.8.x"
+        run: |
+          python3 -m venv env
+          .\env\Scripts\Activate.ps1
       - name: Install cx_Freeze
         run: py -m pip install cx_Freeze
+      - name: Install dependencies
+        run: py -m pip install -r requirements.txt
       - name: Get tag
         id: vars
         shell: bash
@@ -51,8 +50,7 @@ jobs:
       - name: Make zip
         run: |
           mkdir temporary
-          cp -r brotlicffi cffi pycparser bcj certifi chardet Cryptodome idna multivolumefile psutil py7zr pyppmd pyzstd zipfile_deflate64 requests urllib3 tkmacosx temporary/
-          cp LICENSE main.py colour.py brotli.py texttable.py README.md temporary/
+          cp LICENSE main.py lazy.ico README.md requirements.txt temporary/
           cd temporary
           chmod +x main.py
           zip -r ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Python3.zip * 
@@ -76,12 +74,15 @@ jobs:
       - name: Install pyinstaller
         run: |
           pip3 install pyinstaller
+      - name: Install dependencies
+        run: |
+        pip3 install -r requirements.txt
       - name: Get tag
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Create executable
         run: |
-          pyinstaller --onefile --add-data "brotlicffi:brotlicffi" --add-data "cffi:cffi" --add-data "pycparser:pycparser" --add-data "texttable.py:." --add-data "brotli.py:." --add-data "bcj:bcj" --add-data "Cryptodome:Cryptodome" --add-data "multivolumefile:multivolumefile" --add-data "psutil:psutil" --add-data "pyppmd:pyppmd" --add-data "zipfile_deflate64:zipfile_deflate64" --add-data "colour.py:." --add-data "tkmacosx:tkmacosx" --add-data "certifi:certifi" --add-data "requests:requests" --add-data "urllib3:urllib3" --add-data "lazy.ico:." --add-data "chardet:chardet" --icon "lazy.ico" --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS" main.py
+          pyinstaller --onefile  --icon "lazy.ico" --console --name "lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS" main.py
           cd dist
           chmod +x lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
           zip ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS.zip lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
