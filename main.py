@@ -26,17 +26,13 @@ import py7zr
 
 pageNumber = 0
 
-dsiVersions = [
-    "1.0 - 1.3 (USA, EUR, AUS, JPN)",
-    "1.4 - 1.4.5 (USA, EUR, AUS, JPN)",
-    "All versions (KOR, CHN)"
-]
-
 linkToRepo = "https://github.com/YourKalamity/lazy-dsi-file-downloader"
 
+memoryPitLink = "https://dsi.cfw.guide/assets/files/memory_pit/"
+
 memoryPitLinks = [
-    linkToRepo + "/raw/master/assets/files/memoryPit/256/pit.bin",
-    linkToRepo + "/raw/master/assets/files/memoryPit/768_1024/pit.bin"
+    memoryPitLink + "256/pit.bin",
+    memoryPitLink + "768_1024/pit.bin"
 ]
 
 
@@ -135,7 +131,6 @@ def start():
     directory = SDentry
     if directory.endswith("\\") or directory.endswith("/"):
         directory = directory[:-1]
-    version = firmwareVersion.get()
     unlaunchNeeded = unlaunch.get()
 
     # Validate directory
@@ -143,10 +138,6 @@ def start():
     if directoryValidated is False:
         finalbackButton.configure(state='normal')
         return
-    if dsiVersions.index(version) == 1:
-        memoryPitDownload = memoryPitLinks[1]
-    elif dsiVersions.index(version) in [0, 2]:
-        memoryPitDownload = memoryPitLinks[0]
 
     # Creates a path called "/lazy-dsi-file-downloader-tmp/"
     cwdtemp = os.getcwd() + "/lazy-dsi-file-downloader-tmp/"
@@ -157,7 +148,7 @@ def start():
         memoryPitLocation = directory + "/private/ds/app/484E494A/"
         Path(memoryPitLocation).mkdir(parents=True, exist_ok=True)
         outputbox("Downloading Memory Pit\n")
-        downloadLocation = downloadFile(memoryPitDownload, memoryPitLocation)
+        downloadLocation = downloadFile(memoryPitLinks[facebookIcon.get()], memoryPitLocation)
         if downloadLocation is not None:
             outputbox("Memory Pit Downloaded\n")
             print("Memory Pit Downloaded")
@@ -384,7 +375,7 @@ def summonWindow0():
         ]
 
     for count, x in enumerate(bulletpoints):
-        bullet = tkinter.Label(topFrame, text="• "+x, font=(paragraphFont), fg=foregroundColour, wrap=tkinter.WORD, justify="left")
+        bullet = tkinter.Label(topFrame, text="• "+x, font=(paragraphFont), fg=foregroundColour, justify="left", wraplength=450)
         bullet.grid(column=0, row=count+3, sticky="w", padx=5)
     
     discordButton = Button(bottomFrame, text="DS⁽ⁱ⁾ Mode Hacking Discord server", fg=foregroundColour, bg=buttonColour, font=(buttonFont), command=lambda: webbrowser.open("https://discord.gg/yD3spjv", new=1))
@@ -410,12 +401,19 @@ def summonWindow1():
     filler.grid(column=0, row=3)
     downloadmemorypitCheck = tkinter.Checkbutton(topFrame, text = "Download Memory pit exploit?", font=(buttonFont), fg=foregroundColour, variable = downloadmemorypit)
     downloadmemorypitCheck.grid(column=0, row=2, sticky="w")
-    firmwareLabel = tkinter.Label(topFrame, text = "Select your DSi firmware : ", fg=foregroundColour, font=(buttonFont))
-    firmwareLabel.grid(column=0, row=4, sticky="w")
-    selector = tkinter.OptionMenu(topFrame, firmwareVersion, *dsiVersions)
-    selector.config(bg=buttonColour, fg=foregroundColour, font=(buttonFont))
-    selector["menu"].config(bg=buttonColour, fg=foregroundColour, font=(buttonFont))
-    selector.grid(column=0, row=5, sticky="w")
+    instrctionlabel = tkinter.Label(topFrame, text="Check your DSi Camera Version:", font=(paragraphFont), fg=foregroundColour, wraplength=450)
+    instrctionlabel.grid(column=0, row=3, sticky="w", padx=5)
+    instructions = [
+        "1. Power on your console",
+        "2. Open the Nintendo DSi camera app",
+        "3. Open the album with the button on the right",
+        "4. Check for a Facebook (blue f) icon alongside the star, clubs and hearts icons"
+    ]
+    for count, instruction in enumerate(instructions):
+        instrctionlabel = tkinter.Label(topFrame, text=instruction, font=(instructionFont), fg=foregroundColour, justify="left", wraplength=450)
+        instrctionlabel.grid(column=0, row=count+4, sticky="w", padx=5)
+    facebookIconCheck = tkinter.Checkbutton(topFrame, text = "Is the Facebook Icon present?", fg=foregroundColour, bg=buttonColour, font=(buttonFont), variable=facebookIcon)
+    facebookIconCheck.grid(column=0, row=9, sticky="w")
 
     if platform.system() == "Darwin":
         macOS_hiddentext = tkinter.Label(topFrame, text = "(Click the area above this text\n if you can't see the drop down menu) ", fg=foregroundColour, font=(bodyFont))
@@ -561,8 +559,7 @@ if __name__ == "__main__":
 
     # TKinter Vars
     downloadmemorypit = tkinter.IntVar(value=1)
-    firmwareVersion = tkinter.StringVar()
-    firmwareVersion.set(dsiVersions[1])
+    facebookIcon = tkinter.IntVar(value=1)
     downloadtwlmenu = tkinter.IntVar(value=1)
     downloaddumptool = tkinter.IntVar(value=1)
     unlaunch = tkinter.IntVar(value=0)
@@ -599,6 +596,10 @@ if __name__ == "__main__":
     paragraphFont = tkinter.font.Font(
         family="Segoe UI",
         size=12
+    )
+    instructionFont = tkinter.font.Font(
+        family="Segoe UI",
+        size=10
     )
 
     if platform.system() == "Darwin":
