@@ -19,7 +19,6 @@ from subprocess import Popen
 import zipfile
 import webbrowser
 import threading
-import hashlib
 import py7zr
 
 pageNumber = 0
@@ -47,11 +46,6 @@ def downloadFile(link, destination):
     except Exception as e:
         print("File not available, skipping...")
         return None
-
-
-def hashcreator(filetobechecked):
-    string = hashlib.blake2b(open(filetobechecked, 'rb').read()).hexdigest()
-    return string
 
 
 def getLatestGitHub(usernamerepo, assetNumber):
@@ -164,7 +158,6 @@ def start():
             un7zipper(zipfile=TWLmenuLocation, destination=cwdtemp, files=['_nds', 'hiya', 'roms','title', 'BOOT.NDS','snemul.cfg'])
             outputbox("TWiLight Menu ++ Extracted\n")
             print("TWiLight Menu ++ Extracted to", cwdtemp)
-            originalHash = hashcreator(cwdtemp + "BOOT.NDS")
             # Move TWiLight Menu
             shutil.copy(cwdtemp + "BOOT.NDS", directory)
             shutil.copy(cwdtemp + "snemul.cfg", directory)
@@ -175,10 +168,8 @@ def start():
 
             shutil.rmtree(cwdtemp + "_nds/")
             Path(cwdtemp + "_nds/").mkdir(parents=True, exist_ok=True)
-            comparedHash = hashcreator(directory+"/BOOT.NDS")
-            if originalHash == comparedHash:
-                print("TWiLight  Menu ++ placed in", directory)
-                outputbox("TWiLight Menu ++ placed on SD card\n")
+            print("TWiLight  Menu ++ placed in", directory)
+            outputbox("TWiLight Menu ++ placed on SD card\n")
         # Download DeadSkullzJr's Cheat Database
         Path(directory + "/_nds/TWiLightMenu/extras/").mkdir(parents=True, exist_ok=True)
         outputbox("Downloading DeadSkullzJr's Cheat database\n")
@@ -519,19 +510,12 @@ def summonWindow5():
     first.grid(column=0,row=0, sticky="w")
     label= tkinter.Label(topFrame,text="Your SD card is now ready to run and use Homebrew on your Nintendo DSi.",font=(bodyFont),fg=foregroundColour,wraplength=450,justify="left")
     label.grid(column=0,row=2,sticky="w")
-    labellink= tkinter.Label(topFrame,text="You can now eject your SD card and follow the steps of https://dsi.cfw.guide/",font=(bodyFont),fg=foregroundColour,wraplength=450,justify="left")
-    labellink.grid(column=0,row=3,sticky="w")
-    labellink.bind("<Button-1>", lambda e: webbrowser.open_new("https://dsi.cfw.guide/"))
-    label= tkinter.Label(topFrame,text="Credits to",font=(bodyFont),fg=foregroundColour)
-    label.grid(column=0,row=4,sticky="w")
-    bulletpoints = ["YourKalamity - Creator","NightScript - Idea & Writer of dsi.cfw.guide","Emiyl - Writer of dsi.cfw.guide","SNBeast - Testing and pointing out errors","Everybody that helped create the homebrew downloaded by this app","Kaisaan - Yes"]
-    w = 5
-    for x in bulletpoints:
-        label = tkinter.Label(topFrame,text=x,font=(bigListFont),fg=foregroundColour)
-        label.grid(column=0,row=w,sticky="w")
-        w = w + 1
+    linktoguide = tkinter.Button(topFrame, text="Return to dsi.cfw.guide", command=lambda: webbrowser.open_new("https://dsi.cfw.guide/launching-the-exploit.html#section-iii-launching-the-exploit="),fg=foregroundColour,bg=buttonColour,font=(buttonFont),width=guidebuttonwidth)
+    linktoguide.grid(column=0,row=3,sticky="w")
+    label= tkinter.Label(topFrame,text="Rerunning this application will automatically update existing homebrew on the SD card",font=(bodyFont),fg=foregroundColour, wraplength=450,justify="left")
+    label.grid(column=0,row=5,sticky="w")
     label= tkinter.Label(topFrame,text="Press the Close button to Exit",font=(bodyFont),fg=foregroundColour)
-    label.grid(column=0,row=w+1,sticky="w")
+    label.grid(column=0,row=6,sticky="w")
     finish = Button(bottomFrame, text="Close", width=button_width, fg=foregroundColour, bg=nextButtonColour, font=(buttonFont),command=lambda: [topFrame.destroy(), bottomFrame.destroy(), closeButtonPress(window)])
     finish.pack(side=tkinter.RIGHT, padx=5, pady=5)
     window.protocol("WM_DELETE_WINDOW",lambda:closeButtonPress(window))
@@ -558,7 +542,7 @@ if __name__ == "__main__":
     facebookIcon = tkinter.IntVar(value=1)
     downloadtwlmenu = tkinter.IntVar(value=1)
     downloaddumptool = tkinter.IntVar(value=1)
-    unlaunch = tkinter.IntVar(value=0)
+    unlaunch = tkinter.IntVar(value=1)
     godmode9i = tkinter.IntVar(value=0)
     updateHiyaCFW = tkinter.IntVar(value=0)
 
@@ -606,6 +590,7 @@ if __name__ == "__main__":
         backButtonColour = "#f0f0f0"
         nextButtonColour = "#f0f0f0"
         button_width = 80
+        guidebuttonwidth = 200
         folder_width = 350
     else:
         from tkinter import Button
@@ -615,6 +600,7 @@ if __name__ == "__main__":
         backButtonColour = "#567487"
         nextButtonColour = "#027b76"
         button_width = 8
+        guidebuttonwidth = 20
         folder_width = 35
 
     summonWindow0()
