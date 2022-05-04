@@ -17,11 +17,9 @@ from pathlib import Path
 import shutil
 from subprocess import Popen
 import zipfile
-import distutils
 import webbrowser
 import threading
 import hashlib
-from distutils import dir_util
 import py7zr
 
 pageNumber = 0
@@ -170,13 +168,12 @@ def start():
             # Move TWiLight Menu
             shutil.copy(cwdtemp + "BOOT.NDS", directory)
             shutil.copy(cwdtemp + "snemul.cfg", directory)
-            distutils.dir_util.copy_tree(cwdtemp + "_nds/", directory + "/_nds/")
-            distutils.dir_util.copy_tree(cwdtemp + "hiya", directory + "/hiya/")
-            distutils.dir_util.copy_tree(cwdtemp + "title", directory + "/title/")
-            distutils.dir_util.copy_tree(cwdtemp + "roms", directory + "/roms/")
+            shutil.copytree(cwdtemp + "_nds/", directory + "/_nds/")
+            shutil.copytree(cwdtemp + "hiya", directory + "/hiya/")
+            shutil.copytree(cwdtemp + "title", directory + "/title/")
+            shutil.copytree(cwdtemp + "roms", directory + "/roms/")
 
-            # Some Homebrew write to the _nds folder so it is better to clear it first
-            shutil.rmtree(cwdtemp +"_nds/")
+            shutil.rmtree(cwdtemp + "_nds/")
             Path(cwdtemp + "_nds/").mkdir(parents=True, exist_ok=True)
             comparedHash = hashcreator(directory+"/BOOT.NDS")
             if originalHash == comparedHash:
@@ -283,7 +280,6 @@ def start():
                         if "roms" in item["location"]:
                             shutil.copy(cwdtemp+item["location"]["roms"], roms)
                         outputbox("Downloaded "+item["title"]+'\n')
-    # Delete tmp folder
     shutil.rmtree(cwdtemp)
     # Restore button access
     finalnextButton.config(state="normal")
