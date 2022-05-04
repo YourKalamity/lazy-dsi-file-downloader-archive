@@ -81,11 +81,11 @@ jobs:
         run: |
           pyinstaller --onefile  --icon "lazy.ico" --console --name "lazy-dsi-file-downloader-macOS" main.py
           cd dist
-          chmod +x lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS
+          chmod +x lazy-dsi-file-downloader-macOS
           zip ../lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS.zip lazy-dsi-file-downloader-macOS
       - name: Publish artifact
         uses: actions/upload-artifact@v3
-        with:
+        with:   
           path: lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-macOS.zip
           name: macos
 
