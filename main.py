@@ -43,7 +43,7 @@ def downloadFile(link, destination):
         downloadLocation = destination + fileName
         open(downloadLocation, 'wb').write(r.content)
         return downloadLocation
-    except Exception as e:
+    except Exception:
         print("File not available, skipping...")
         return None
 
@@ -94,9 +94,13 @@ def validateDirectory(directory):
 
 
 def unzipper(unzipped, destination):
-    with zipfile.ZipFile(unzipped, 'r') as zip_ref:
-        zip_ref.extractall(destination)
-        zip_ref.close()
+    try:
+        with zipfile.ZipFile(unzipped, 'r') as zip_ref:
+            zip_ref.extractall(destination)
+            zip_ref.close()
+        return True
+    except Exception:
+        return False
 
 
 def un7zipper(zipfile, destination, files=None):
@@ -197,8 +201,12 @@ def start():
             outputbox("Unlaunch Downloaded\n")
             lineCounter = lineCounter + 1
             # Extract Unlaunch
-            unzipper(unlaunchLocation, directory)
-            print("Unlaunch Extracted")
+            if unzipper(unlaunchLocation, directory):
+                print("Unlaunch Extracted")
+                outputbox("Unlaunch Extracted\n")
+            else:
+                print("Failed to extract Unlaunch")
+                outputbox("Failed to extract Unlaunch\n")
 
     # Creates roms/nds if it does not exist
     roms = directory + "/roms/nds/"
@@ -232,7 +240,7 @@ def start():
                 shutil.rmtree(directory + "/for SDNAND SD card/")
         else:
             outputbox("hiya.dsi was not found\n")
-            outputbox("Please run the hiyaCFW helper first")
+            outputbox("Please run the hiyaCFW helper first\n")
 
     # Download and extract extra homebrew
     outputbox("Downloading other homebrew\n")
