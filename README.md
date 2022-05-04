@@ -15,7 +15,7 @@ and places them in the correct folders on the SD card ready for use with the [ds
 
 ### Windows
 
-- 7-Zip must be installed before launching the .exe
+- Windows 7+ needed to run the executable
 
 ### macOS
 
