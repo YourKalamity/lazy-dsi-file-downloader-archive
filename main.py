@@ -15,18 +15,13 @@ import requests
 import json
 from pathlib import Path
 import shutil
-from subprocess import Popen
 import zipfile
 import webbrowser
 import threading
 import py7zr
 
 pageNumber = 0
-
-linkToRepo = "https://github.com/YourKalamity/lazy-dsi-file-downloader"
-
 memoryPitLink = "https://dsi.cfw.guide/assets/files/memory_pit/"
-
 memoryPitLinks = [
     memoryPitLink + "256/pit.bin",
     memoryPitLink + "768_1024/pit.bin"
@@ -49,6 +44,8 @@ def downloadFile(link, destination):
 
 
 def getLatestGitHub(usernamerepo, assetNumber):
+    if not isinstance(assetNumber, int):
+        return False
     release = json.loads(
         requests.get(
             "https://api.github.com/repos/"+usernamerepo+"/releases/latest"
@@ -94,6 +91,8 @@ def validateDirectory(directory):
 
 
 def unzipper(unzipped, destination):
+    if not zipfile.is_zipfile(unzipped):
+        return False
     try:
         with zipfile.ZipFile(unzipped, 'r') as zip_ref:
             zip_ref.extractall(destination)
@@ -104,154 +103,175 @@ def unzipper(unzipped, destination):
 
 
 def un7zipper(zipfile, destination, files=None):
-    if py7zr.is_7zfile(zipfile):
-        with py7zr.SevenZipFile(zipfile) as archive:
-            if files is None:
-                archive.extractall(path=destination)
-            else:
-                targets = files
-                for extractable in archive.getnames():
-                    for file in files:
-                        if extractable != file and extractable.startswith(file):
-                            targets.append(extractable)
-                archive.extract(path=destination, targets=files)
-
-
-def start():
-    # Clear outputBox
-    outputBox.configure(state='normal')
-    outputBox.delete('1.0', tkinter.END)
-    outputBox.configure(state='disabled')
-
-    lineCounter = 0
-    directory = SDentry
-    if directory.endswith("\\") or directory.endswith("/"):
-        directory = directory[:-1]
-    unlaunchNeeded = unlaunch.get()
-
-    # Validate directory
-    directoryValidated = validateDirectory(directory)
-    if directoryValidated is False:
-        finalbackButton.configure(state='normal')
-        return
-
-    # Creates a path called "/lazy-dsi-file-downloader-tmp/"
-    cwdtemp = os.getcwd() + "/lazy-dsi-file-downloader-tmp/"
-    Path(cwdtemp).mkdir(parents=True, exist_ok=True)
-
-    if downloadmemorypit.get() == 1:
-        # Download Memory Pit
-        memoryPitLocation = directory + "/private/ds/app/484E494A/"
-        Path(memoryPitLocation).mkdir(parents=True, exist_ok=True)
-        outputbox("Downloading Memory Pit\n")
-        downloadLocation = downloadFile(memoryPitLinks[facebookIcon.get()], memoryPitLocation)
-        if downloadLocation is not None:
-            outputbox("Memory Pit Downloaded\n")
-            print("Memory Pit Downloaded")
-
-    if downloadtwlmenu.get() == 1:
-        # Download TWiLight Menu
-        outputbox("Downloading TWiLight Menu ++\n")
-        TWLmenuLocation = downloadFile(getLatestGitHub('DS-Homebrew/TWiLightMenu', 1), cwdtemp)
-        if TWLmenuLocation is not None:
-            outputbox("TWiLight Menu ++ Downloaded\n")
-            print("TWiLight Menu ++ Downloaded")
-
-            # Extract TWiLight Menu
-
-            un7zipper(zipfile=TWLmenuLocation, destination=cwdtemp, files=['_nds', 'hiya', 'roms','title', 'BOOT.NDS','snemul.cfg'])
-            outputbox("TWiLight Menu ++ Extracted\n")
-            print("TWiLight Menu ++ Extracted to", cwdtemp)
-            # Move TWiLight Menu
-            shutil.copy(cwdtemp + "BOOT.NDS", directory)
-            shutil.copy(cwdtemp + "snemul.cfg", directory)
-            shutil.copytree(cwdtemp + "_nds/", directory + "/_nds/")
-            shutil.copytree(cwdtemp + "hiya", directory + "/hiya/")
-            shutil.copytree(cwdtemp + "title", directory + "/title/")
-            shutil.copytree(cwdtemp + "roms", directory + "/roms/")
-
-            shutil.rmtree(cwdtemp + "_nds/")
-            Path(cwdtemp + "_nds/").mkdir(parents=True, exist_ok=True)
-            print("TWiLight  Menu ++ placed in", directory)
-            outputbox("TWiLight Menu ++ placed on SD card\n")
-        # Download DeadSkullzJr's Cheat Database
-        Path(directory + "/_nds/TWiLightMenu/extras/").mkdir(parents=True, exist_ok=True)
-        outputbox("Downloading DeadSkullzJr's Cheat database\n")
-        downloadLocation = downloadFile('https://bitbucket.org/DeadSkullzJr/nds-i-cheat-databases/raw/963fff3858de7539891ef7918d992b8b06972a48/Cheat%20Databases/usrcheat.dat', directory + "/_nds/TWiLightMenu/extras/")
-        if downloadLocation is not None:
-            print("DeadSkullzJr's Cheat Database downloaded")
-            outputbox("DeadSkullzJr's Cheat Database downloaded\n")
-
-    if downloaddumptool.get() == 1:
-        # Download dumpTool
-        outputbox("Downloading dumpTool\n")
-        downloadLocation = downloadFile(getLatestGitHub('zoogie/dumpTool', 0), directory)
-        if downloadLocation is not None:
-            print("dumpTool downloaded")
-            outputbox("dumpTool Downloaded\n")
-            lineCounter = lineCounter + 1
-
-    if unlaunchNeeded == 1:
-        # Download Unlaunch
-        url = "https://web.archive.org/web/20210207235625if_/https://problemkaputt.de/unlaunch.zip"
-        outputbox("Downloading Unlaunch\n")
-        unlaunchLocation = downloadFile(url, cwdtemp)
-        if unlaunchLocation is not None:
-            print("Unlaunch Downloaded")
-            outputbox("Unlaunch Downloaded\n")
-            lineCounter = lineCounter + 1
-            # Extract Unlaunch
-            if unzipper(unlaunchLocation, directory):
-                print("Unlaunch Extracted")
-                outputbox("Unlaunch Extracted\n")
-            else:
-                print("Failed to extract Unlaunch")
-                outputbox("Failed to extract Unlaunch\n")
-
-    # Creates roms/nds if it does not exist
-    roms = directory + "/roms/nds/"
-    Path(roms).mkdir(parents=True, exist_ok=True)
-
-    if godmode9i.get() == 1:
-        # Download GodMode9i
-        outputbox("Downloading GodMode9i\n")
-        downloadLocation = downloadFile(getLatestGitHub('DS-Homebrew/GodMode9i', 0), cwdtemp)
-        if downloadLocation is not None:
-            print("GodMode9i downloaded")
-            outputbox("GodMode9i Downloaded\n")
-            lineCounter = lineCounter + 1
-            un7zipper(zipfile=downloadLocation, destination=cwdtemp, files=['GodMode9i/GodMode9i.nds'])
-            shutil.copy(cwdtemp + "GodMode9i/GodMode9i.nds", roms)
-            outputbox("GodMode9i Extracted\n")
-            print("GodMode9i Extracted to", roms)
-
-    if updateHiyaCFW.get() == 1:
-        # Check if old hiyaCFW insallation exists
-        outputbox("Checking for hiyaCFW\n")
-        if os.path.isfile(directory+"/hiya.dsi"):
-            outputbox("hiyaCFW found...\n")
-            outputbox("Downloading latest...\n")
-            downloadLocation = downloadFile(getLatestGitHub("RocketRobz/hiyaCFW", 0), cwdtemp)
-            if downloadLocation is not None:
-                outputbox("hiyaCFW.7z downloaded\n")
-                os.remove(directory+"/hiya.dsi")
-                un7zipper(zipfile=downloadLocation, destination=directory, files=['for SDNAND SD card/hiya.dsi'])
-                shutil.move(directory + "/for SDNAND SD card/hiya.dsi", directory + "/hiya.dsi")
-                shutil.rmtree(directory + "/for SDNAND SD card/")
+    if not py7zr.is_7zfile(zipfile):
+        return False
+    with py7zr.SevenZipFile(zipfile) as archive:
+        if files is None:
+            archive.extractall(path=destination)
         else:
-            outputbox("hiya.dsi was not found\n")
-            outputbox("Please run the hiyaCFW helper first\n")
+            targets = files
+            for extractable in archive.getnames():
+                for file in files:
+                    if extractable != file and extractable.startswith(file):
+                        targets.append(extractable)
+            archive.extract(path=destination, targets=files)
 
-    # Download and extract extra homebrew
-    outputbox("Downloading other homebrew\n")
-    lineCounter = lineCounter + 1
-    print("Downloading other homebrew...")
 
+def download_MemoryPit(directory):
+    memoryPitLocation = directory + "/private/ds/app/484E494A/"
+    Path(memoryPitLocation).mkdir(parents=True, exist_ok=True)
+    outputbox("Downloading Memory Pit\n")
+    downloadLocation = downloadFile(memoryPitLinks[facebookIcon.get()], memoryPitLocation)
+    if downloadLocation is None:
+        outputbox("Memory Pit not found, skipping...\n")
+        print("Memory Pit not found, skipping...")
+        return False
+    outputbox("Memory Pit Downloaded\n")
+    print("Memory Pit Downloaded")
+    return True
+
+
+def download_DSJ_cheat_codes(directory):
+    outputbox("Downloading DeadSkullzJr's Cheat database\n")
+    downloadLocation = downloadFile('https://bitbucket.org/DeadSkullzJr/nds-i-cheat-databases/raw/963fff3858de7539891ef7918d992b8b06972a48/Cheat%20Databases/usrcheat.dat', directory + "/_nds/TWiLightMenu/extras/")
+
+    if downloadLocation is None:
+        outputbox("DeadSkullzJr's Cheat database not found, skipping...\n")
+        print("DeadSkullzJr's Cheat database not found, skipping...")
+        return False
+
+    Path(directory + "/_nds/TWiLightMenu/extras/").mkdir(parents=True, exist_ok=True)
+    print("DeadSkullzJr's Cheat Database downloaded")
+    outputbox("DeadSkullzJr's Cheat Database downloaded\n")
+
+
+def download_TWLMenu(directory, cwdtemp):
+    # Download TWiLight Menu
+    outputbox("Downloading TWiLight Menu ++\n")
+    TWLmenuLocation = downloadFile(getLatestGitHub('DS-Homebrew/TWiLightMenu', 1), cwdtemp)
+
+    if TWLmenuLocation is None:
+        outputbox("TWiLight Menu not found, skipping...\n")
+        print("TWiLight Menu not found, skipping...")
+        return False
+
+    outputbox("TWiLight Menu ++ Downloaded\n")
+    print("TWiLight Menu ++ Downloaded")
+
+    # Extract TWiLight Menu
+
+    twlfolders = ['_nds', 'hiya', 'roms','title']
+    twlfiles = ['BOOT.NDS', 'snemul.cfg']
+    if un7zipper(zipfile=TWLmenuLocation, destination=cwdtemp, files=twlfolders + twlfiles) is False:
+        outputbox("Failed to extract TWiLight Menu ++\n")
+        print("Failed to extract TWiLight Menu ++")
+        return False
+
+    outputbox("TWiLight Menu ++ Extracted\n")
+    print("TWiLight Menu ++ Extracted to", cwdtemp)
+
+    # Move TWiLight Menu
+    for folder in twlfolders:
+        shutil.copytree(cwdtemp + folder, directory + "/" + folder + "/")
+    for files in twlfiles:
+        shutil.move(cwdtemp + files, directory)
+
+    shutil.rmtree(cwdtemp + "_nds/")
+    Path(cwdtemp + "_nds/").mkdir(parents=True, exist_ok=True)
+
+    print("TWiLight  Menu ++ placed in", directory)
+    outputbox("TWiLight Menu ++ placed on SD card\n")
+
+    # Download DeadSkullzJr's Cheat Database
+    download_DSJ_cheat_codes(directory)
+    return True
+
+
+def download_dumpTool(directory):
+    outputbox("Downloading dumpTool\n")
+    if downloadFile(getLatestGitHub('zoogie/dumpTool', 0), directory) is None:
+        outputbox("Failed to download dumpTool\n")
+        print("Failed to download dumpTool")
+        return False
+    print("dumpTool downloaded")
+    outputbox("dumpTool Downloaded\n")
+    return True
+
+
+def download_Unlaunch(directory, cwdtemp):
+    outputbox("Downloading Unlaunch\n")
+    url = "https://web.archive.org/web/20210207235625if_/https://problemkaputt.de/unlaunch.zip"
+    unlaunchLocation = downloadFile(url, cwdtemp)
+    if unlaunchLocation is None:
+        outputbox("Failed to download Unlaunch\n")
+        print("Failed to download Unlaunch")
+        return False
+    print("Unlaunch Downloaded")
+    outputbox("Unlaunch Downloaded\n")
+
+    if not unzipper(unlaunchLocation, directory):
+        print("Failed to extract Unlaunch")
+        outputbox("Failed to extract Unlaunch\n")
+        return False
+
+    print("Unlaunch Extracted")
+    outputbox("Unlaunch Extracted\n")
+    return True
+
+
+def download_GodMode9i(directory, cwdtemp, roms):
+    # Download GodMode9i
+    outputbox("Downloading GodMode9i\n")
+    downloadLocation = downloadFile(getLatestGitHub('DS-Homebrew/GodMode9i', 0), cwdtemp)
+    if downloadLocation is None:
+        outputbox("Failed to download GodMode9i\n")
+        print("Failed to download GodMode9i")
+        return False
+    print("GodMode9i downloaded")
+    outputbox("GodMode9i Downloaded\n")
+
+    if un7zipper(zipfile=downloadLocation, destination=cwdtemp, files=['GodMode9i/GodMode9i.nds']) is False:
+        outputbox("Failed to extract GodMode9i\n")
+        print("Failed to extract GodMode9i")
+        return False
+
+    shutil.copy(cwdtemp + "GodMode9i/GodMode9i.nds", roms)
+    outputbox("GodMode9i Extracted\n")
+    print("GodMode9i Extracted to", roms)
+    return True
+
+
+def download_hiyaCFW(directory, cwdtemp):
+    # Check if old hiyaCFW insallation exists
+    outputbox("Checking for hiyaCFW\n")
+    if os.path.isfile(directory+"/hiya.dsi") is False:
+        outputbox("hiya.dsi not found, skipping...\n")
+        outputbox("Please run the hiyaCFW helper first\n")
+        print("hiya.dsi not found, skipping...")
+        print("Please run the hiyaCFW helper first")
+        return False
+
+    outputbox("hiyaCFW found...\n")
+    outputbox("Downloading latest...\n")
+    downloadLocation = downloadFile(getLatestGitHub("RocketRobz/hiyaCFW", 0), cwdtemp)
+    if downloadLocation is None:
+        outputbox("Failed to download hiyaCFW\n")
+        print("Failed to download hiyaCFW")
+        return False
+
+    outputbox("hiyaCFW.7z downloaded\n")
+    os.remove(directory+"/hiya.dsi")
+    un7zipper(zipfile=downloadLocation, destination=directory, files=['for SDNAND SD card/hiya.dsi'])
+    shutil.move(directory + "/for SDNAND SD card/hiya.dsi", directory + "/hiya.dsi")
+    shutil.rmtree(directory + "/for SDNAND SD card/")
+    return True
+
+
+def download_additional_homebrew(directory, cwdtemp, roms):
     for count, item in enumerate(homebrewDB):
         if homebrewList[count].get() == 1:
             print("Downloading "+item["title"])
             outputbox("Downloading "+item["title"]+'\n')
-            lineCounter = lineCounter + 1
             if item["github"] == "True":
                 downloadlink = getLatestGitHub(item["repo"], int(item["asset"]))
             else:
@@ -279,6 +299,9 @@ def start():
                         if "roms" in item["location"]:
                             shutil.copy(cwdtemp+item["location"]["roms"], roms)
                         outputbox("Downloaded "+item["title"]+'\n')
+
+
+def clean_up(cwdtemp):
     shutil.rmtree(cwdtemp)
     # Restore button access
     finalnextButton.config(state="normal")
@@ -286,6 +309,54 @@ def start():
     print("Done!")
     outputbox("Done!\n")
     outputbox("Press the Finish button to continue... \n")
+
+
+def start():
+    # Clear outputBox
+    outputBox.configure(state='normal')
+    outputBox.delete('1.0', tkinter.END)
+    outputBox.configure(state='disabled')
+
+    directory = SDentry
+    if directory.endswith("\\") or directory.endswith("/"):
+        directory = directory[:-1]
+    # Validate directory
+    if validateDirectory(directory) is False:
+        finalbackButton.configure(state='normal')
+        return
+
+    # Creates a temporary directory for the files to be downloaded to
+    cwdtemp = os.getcwd() + "/lazy-dsi-file-downloader-tmp/"
+    Path(cwdtemp).mkdir(parents=True, exist_ok=True)
+
+    if downloadmemorypit.get() == 1:
+        download_MemoryPit(directory)
+
+    if downloadtwlmenu.get() == 1:
+        download_TWLMenu(directory, cwdtemp)
+
+    if downloaddumptool.get() == 1:
+        download_dumpTool(directory)
+
+    if unlaunch.get() == 1:
+        download_Unlaunch(directory, cwdtemp)
+
+    roms = directory + "/roms/nds/"
+    Path(roms).mkdir(parents=True, exist_ok=True)
+
+    if godmode9i.get() == 1:
+        download_GodMode9i(directory, cwdtemp, roms)
+
+    if updateHiyaCFW.get() == 1:
+        download_hiyaCFW(directory, cwdtemp)
+
+    # Download and extract extra homebrew
+    outputbox("Downloading other homebrew\n")
+    print("Downloading other homebrew...")
+    download_additional_homebrew(directory, cwdtemp, roms)
+
+    clean_up(cwdtemp)
+    return True
 
 
 def chooseDir(source, SDentry):
