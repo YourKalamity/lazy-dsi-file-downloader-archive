@@ -172,7 +172,7 @@ def download_TWLMenu(directory, cwdtemp):
 
     # Move TWiLight Menu
     for folder in twlfolders:
-        shutil.copytree(cwdtemp + folder, directory + "/" + folder + "/")
+        shutil.copytree(cwdtemp + folder, directory + "/" + folder + "/", dirs_exist_ok=True)
     for files in twlfiles:
         shutil.move(cwdtemp + files, directory)
 
