@@ -20,8 +20,6 @@ jobs:
         run: |
           py -m venv env
           ./env/Scripts/Activate.ps1
-      - name: Install cx_Freeze
-        run: py -m pip install cx_Freeze
       - name: Install dependencies
         run: py -m pip install -r requirements.txt
       - name: Get tag
@@ -30,6 +28,7 @@ jobs:
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Make binary
         run: |
+          py -m pip install cx_Freeze
           py cxfreeze_setup.py build
           mv dist/main.exe dist/lazy-dsi-file-downloader-${{ steps.vars.outputs.tag }}-Windows.exe
         shell: bash
