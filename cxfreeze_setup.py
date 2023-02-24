@@ -2,7 +2,8 @@
 
 from cx_Freeze import setup, Executable
 
-build_exe_options = {'build_exe': "dist"}
+
+build_exe_options = {'build_exe': "dist", "include_msvcr":True}
 base = None
 
 setup(
