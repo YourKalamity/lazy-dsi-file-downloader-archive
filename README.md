@@ -1,5 +1,7 @@
 # Lazy DSi file downloader (for dsi.cfw.guide)
 
+# Lazy DSi File Downloader has been deprecated, please follow the manual setup guide instead [here](https://dsi.cfw.guide/get-started.html#section-i-prep-work)
+
 ![a screenshot of the program](https://github.com/YourKalamity/lazy-dsi-file-downloader/raw/master/assets/files/screenshots/app%20v3.1.3.png "Lazy DSi file downloader on Windows 10")
 
 Automatically downloads 
